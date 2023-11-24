@@ -1,4 +1,4 @@
-package eternal.domain;
+package eternal.domain.teamMember;
 
 import eternal.domain.custom.Position;
 import eternal.domain.custom.TeamMemberShip;

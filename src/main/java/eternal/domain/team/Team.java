@@ -1,4 +1,4 @@
-package eternal.domain;
+package eternal.domain.team;
 
 import lombok.Data;
 

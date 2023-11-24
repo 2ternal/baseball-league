@@ -1,4 +1,4 @@
-package eternal.domain;
+package eternal.domain.custom;
 
 import eternal.domain.custom.Position;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package eternal.domain;
+package eternal.domain.member;
 
 import eternal.domain.custom.Birthday;
 import lombok.Data;

@@ -1,0 +1,39 @@
+package eternal.domain.member;
+
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+@Repository
+public class MemberRepository {
+
+    private static Map<Long, Member> memberStore = new HashMap<>();
+    private static Long sequence = 0L;
+
+    //새 멤버 추가
+    public Member save(Member member) {
+        member.setMemberId(++sequence);
+        memberStore.put(member.getMemberId(), member);
+        return member;
+    }
+
+    //멤버 아이디로 member 찾기
+    public Member findByMemberId(Long MemberId) {
+        return memberStore.get(MemberId);
+    }
+
+    //로그인 아이디로 member 찾기
+    public Optional<Member> findByLoginId(String loginId) {
+        return findAll().stream()
+                .filter(m -> m.getLoginId().equals(loginId))
+                .findFirst();
+    }
+
+    public List<Member> findAll() {
+        return new ArrayList<>(memberStore.values());
+    }
+
+    public void clearStore() {
+        memberStore.clear();
+    }
+}
