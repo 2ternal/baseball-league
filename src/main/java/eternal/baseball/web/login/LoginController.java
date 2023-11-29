@@ -3,7 +3,6 @@ package eternal.baseball.web.login;
 import eternal.baseball.domain.login.LoginService;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.web.session.SessionConst;
-import eternal.baseball.web.session.SessionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -20,7 +19,6 @@ import javax.servlet.http.HttpSession;
 public class LoginController {
 
     private final LoginService loginService;
-    private final SessionManager sessionManager;
 
     /**
      * 로그인 페이지
@@ -50,10 +48,9 @@ public class LoginController {
         }
 
         HttpSession session = request.getSession();
-        String loginY = "Y";
 
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
-        session.setAttribute(SessionConst.LOGIN_CHECK, loginY);
+        session.setAttribute(SessionConst.LOGIN_CHECK, SessionConst.LOGIN_VALID);
 
         return "redirect:member/members";
     }
