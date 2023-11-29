@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <link th:href="@{/css/bootstrap.min.css}"
+        href="../css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container" style="max-width: 600px">
+  <div class="py-5 text-center">
+    <h2>팀 목록</h2>
+  </div>
+  <div class="row">
+    <th:block th:if="${session.loginCheck == null}">
+      <div th:replace="template/fragment/nav :: nav"></div>
+    </th:block>
+    <th:block th:if="${session.loginCheck == 'Y'}">
+      <div th:replace="template/fragment/nav :: loginNav"></div>
+    </th:block>
+  </div>
+  <hr class="my-4">
+  <div>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>팀 ID</th>
+        <th>팀명</th>
+        <th>팀 코드</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="team : ${teams}">
+        <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${team.teamId})}"
+               th:text="${team.teamId}">팀 ID</a></td>
+        <td><a href="team.html" th:text="${team.teamName}">팀명</a></td>
+        <td th:text="${team.teamCode}">이름</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div> <!-- /container -->
+
+</body>
+</html>
