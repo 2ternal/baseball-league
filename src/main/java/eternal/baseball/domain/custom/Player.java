@@ -1,6 +1,5 @@
-package eternal.domain.custom;
+package eternal.baseball.domain.custom;
 
-import eternal.domain.custom.Position;
 import lombok.Data;
 
 @Data

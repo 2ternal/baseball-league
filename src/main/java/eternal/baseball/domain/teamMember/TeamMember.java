@@ -1,7 +1,7 @@
-package eternal.domain.teamMember;
+package eternal.baseball.domain.teamMember;
 
-import eternal.domain.custom.Position;
-import eternal.domain.custom.TeamMemberShip;
+import eternal.baseball.domain.custom.Position;
+import eternal.baseball.domain.custom.TeamMemberShip;
 import lombok.Data;
 
 @Data

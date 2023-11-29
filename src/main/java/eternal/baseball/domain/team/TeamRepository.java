@@ -1,6 +1,5 @@
-package eternal.domain.team;
+package eternal.baseball.domain.team;
 
-import eternal.domain.member.Member;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

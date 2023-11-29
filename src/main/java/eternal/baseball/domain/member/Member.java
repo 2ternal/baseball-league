@@ -1,6 +1,6 @@
-package eternal.domain.member;
+package eternal.baseball.domain.member;
 
-import eternal.domain.custom.Birthday;
+import eternal.baseball.domain.custom.Birthday;
 import lombok.Data;
 
 @Data

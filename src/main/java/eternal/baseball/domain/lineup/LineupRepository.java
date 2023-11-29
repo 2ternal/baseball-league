@@ -1,6 +1,5 @@
-package eternal.domain.lineup;
+package eternal.baseball.domain.lineup;
 
-import eternal.domain.member.Member;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

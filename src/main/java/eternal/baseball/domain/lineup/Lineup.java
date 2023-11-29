@@ -1,6 +1,6 @@
-package eternal.domain.lineup;
+package eternal.baseball.domain.lineup;
 
-import eternal.domain.custom.Player;
+import eternal.baseball.domain.custom.Player;
 import lombok.Data;
 
 import java.util.HashMap;

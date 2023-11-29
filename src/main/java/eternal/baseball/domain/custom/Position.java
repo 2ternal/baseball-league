@@ -1,4 +1,4 @@
-package eternal.domain.custom;
+package eternal.baseball.domain.custom;
 
 public enum Position {
 

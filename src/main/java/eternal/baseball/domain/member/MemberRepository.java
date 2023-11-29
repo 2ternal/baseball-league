@@ -1,4 +1,4 @@
-package eternal.domain.member;
+package eternal.baseball.domain.member;
 
 import org.springframework.stereotype.Repository;
 
