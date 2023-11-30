@@ -1,8 +1,11 @@
 package eternal.baseball.web.team;
 
+import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.team.Team;
 import eternal.baseball.domain.team.TeamRepository;
+import eternal.baseball.domain.teamMember.TeamMember;
+import eternal.baseball.domain.teamMember.TeamMemberRepository;
 import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +30,7 @@ import java.util.List;
 public class TeamController {
 
     private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @GetMapping("/teams")
     public String teams(Model model) {
@@ -66,15 +70,24 @@ public class TeamController {
         }
 
         HttpSession session = request.getSession();
-        Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
         log.info("[createTeam] loginMember={}", loginMember);
 
+        //검증 후 팀 창단
         Team team = new Team();
         team.createTeamFormToTeam(createTeamForm);
-        team.setOwner((Member) loginMember);
-
+        team.setOwner(loginMember);
         log.info("[createTeam] owner={}", team.getOwner());
+
         teamRepository.save(team);
+        log.info("[createTeam] team={}", team);
+
+        //팀원에 추가
+        TeamMember teamMember = new TeamMember();
+        teamMember.addTeamMember(loginMember, team, TeamMemberShip.OWNER);
+
+        teamMemberRepository.save(teamMember);
+        log.info("[createTeam] teamMember={}", teamMember);
 
         return "redirect:teams";
     }

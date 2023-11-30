@@ -2,6 +2,8 @@ package eternal.baseball.domain.teamMember;
 
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
+import eternal.baseball.domain.member.Member;
+import eternal.baseball.domain.team.Team;
 import lombok.Data;
 
 @Data
@@ -22,5 +24,19 @@ public class TeamMember {
         this.teamId = teamId;
         this.memberShip = memberShip;
         this.mainPosition = mainPosition;
+    }
+
+    public void addTeamMember(Member member, Team team, TeamMemberShip teamMemberShip) {
+        this.memberId = member.getMemberId();
+        this.teamId = team.getTeamId();
+        this.memberShip = teamMemberShip;
+        this.mainPosition = Position.NONE;
+    }
+
+    public void addTeamMember(Member member, Team team, TeamMemberShip teamMemberShip, Position position) {
+        this.memberId = member.getMemberId();
+        this.teamId = team.getTeamId();
+        this.memberShip = teamMemberShip;
+        this.mainPosition = position;
     }
 }

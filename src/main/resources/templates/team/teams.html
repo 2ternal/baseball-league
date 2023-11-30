@@ -27,6 +27,7 @@
         <th>팀 ID</th>
         <th>팀명</th>
         <th>팀 코드</th>
+        <th>구단주</th>
       </tr>
       </thead>
       <tbody>
@@ -34,7 +35,8 @@
         <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${team.teamId})}"
                th:text="${team.teamId}">팀 ID</a></td>
         <td><a href="team.html" th:text="${team.teamName}">팀명</a></td>
-        <td th:text="${team.teamCode}">이름</td>
+        <td th:text="${team.teamCode}">팀 코드</td>
+        <td th:text="${team.owner.name}">구단주 이름</td>
       </tr>
       </tbody>
     </table>

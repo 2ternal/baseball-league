@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class teamMemberRepository {
+public class TeamMemberRepository {
 
     private static HashMap<Long, TeamMember> teamMemberRepository = new HashMap<>();
     private static Long sequence = 0L;
