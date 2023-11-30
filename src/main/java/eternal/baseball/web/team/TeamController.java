@@ -1,7 +1,9 @@
 package eternal.baseball.web.team;
 
+import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.team.Team;
 import eternal.baseball.domain.team.TeamRepository;
+import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j
@@ -39,30 +43,37 @@ public class TeamController {
 
     @PostMapping("/createTeam")
     public String createTeam(@Validated @ModelAttribute("createTeamForm") CreateTeamForm createTeamForm,
-                             BindingResult bindingResult) {
+                             BindingResult bindingResult,
+                             HttpServletRequest request) {
 
         // 팀명 중복 검증
         if (!ObjectUtils.isEmpty(teamRepository.findByTeamName(createTeamForm.getTeamName()))) {
-            log.info("  duplicateTeamName={}", createTeamForm.getTeamName());
+            log.info("[createTeam] duplicateTeamName={}", createTeamForm.getTeamName());
             bindingResult.reject("duplicateTeamName", "중복되는 팀명 입니다");
-            log.info("bindingResult={}", bindingResult);
+            log.info("[createTeam] bindingResult={}", bindingResult);
         }
 
         // 팀 코드 중복 검증
         if (!ObjectUtils.isEmpty(teamRepository.findByTeamCode(createTeamForm.getTeamCode()))) {
-            log.info("  duplicateTeamCode={}", createTeamForm.getTeamCode());
+            log.info("[createTeam] duplicateTeamCode={}", createTeamForm.getTeamCode());
             bindingResult.reject("duplicateTeamCode", "중복되는 팀 코드 입니다");
-            log.info("bindingResult={}", bindingResult);
+            log.info("[createTeam] bindingResult={}", bindingResult);
         }
 
         if (bindingResult.hasErrors()) {
-            log.info("bindingResult={}", bindingResult);
+            log.info("[createTeam] bindingResult={}", bindingResult);
             return "team/createTeamForm";
         }
 
+        HttpSession session = request.getSession();
+        Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+        log.info("[createTeam] loginMember={}", loginMember);
+
         Team team = new Team();
         team.createTeamFormToTeam(createTeamForm);
+        team.setOwner((Member) loginMember);
 
+        log.info("[createTeam] owner={}", team.getOwner());
         teamRepository.save(team);
 
         return "redirect:teams";
