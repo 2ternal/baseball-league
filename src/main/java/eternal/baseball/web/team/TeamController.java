@@ -14,14 +14,12 @@ import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -90,5 +88,16 @@ public class TeamController {
         log.info("[createTeam] teamMember={}", teamMember);
 
         return "redirect:teams";
+    }
+
+    @GetMapping("/{teamId}")
+    public String team(@PathVariable Long teamId, Model model) {
+        Team team = teamRepository.findByTeamId(teamId);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findByTeamName(team.getTeamName());
+        model.addAttribute("team", team);
+        model.addAttribute("teamMembers", teamMembers);
+
+        return "team/team";
     }
 }

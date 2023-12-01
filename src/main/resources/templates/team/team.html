@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <link th:href="@{/css/bootstrap.min.css}"
+          href="../css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 560px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="py-5 text-center">
+        <h2 th:text="#{page.team}">팀 상세</h2>
+    </div>
+
+    <!-- 추가 -->
+    <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
+
+    <div>
+        <label for="teamId" th:text="#{label.team.teamId}">팀 ID</label>
+        <input type="text" id="teamId" name="teamId" class="form-control" value="1" th:value="${team.teamId}"
+               readonly>
+    </div>
+    <div>
+        <label for="teamName" th:text="#{label.team.teamName}">팀명</label>
+        <input type="text" id="teamName" name="teamName" class="form-control" value="팀A" th:value="${team.teamName}"
+               readonly>
+    </div>
+    <div>
+        <label for="teamCode" th:text="#{label.team.teamCode}">팀 코드</label>
+        <input type="text" id="teamCode" name="teamCode" class="form-control" value="AAA" th:value="${team.teamCode}"
+               readonly>
+    </div>
+    <div>
+        <label for="owner" th:text="#{label.team.owner}">구단주</label>
+        <input type="text" id="owner" name="owner" class="form-control" value="Owner" th:value="${team.owner.name}"
+               readonly>
+    </div>
+
+    <hr class="my-4">
+
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th th:text="#{label.member.memberId}">팀원 ID</th>
+                <th th:text="#{label.member.name}">이름</th>
+                <th th:text="#{label.teamMember.memberShip}">선수 분류</th>
+                <th th:text="#{label.teamMember.mainPosition}">메인 포지션</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="teamMember : ${teamMembers}">
+                <td><a href="team.html" th:href="@{/member/{memberId}(memberId=${teamMember.member.memberId})}"
+                       th:text="${teamMember.member.memberId}">팀원 ID</a></td>
+                <td><a href="team.html" th:href="@{/member/{memberId}(memberId=${teamMember.member.memberId})}"
+                       th:text="${teamMember.member.name}">이름</a></td>
+                <td th:text="${teamMember.memberShip}">선수 분류</td>
+                <td th:text="${teamMember.mainPosition}">메인 포지션</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col">
+            <button class="w-100 btn btn-secondary btn-lg"
+                    onclick="location.href='teams.html'"
+                    th:onclick="|location.href='@{/team/teams}'|"
+                    type="button" th:text="#{button.list}">목록으로
+            </button>
+        </div>
+    </div>
+
+</div> <!-- /container -->
+</body>
+</html>

@@ -18,23 +18,32 @@ public class TeamMemberRepository {
      */
     public TeamMember save(TeamMember teamMember) {
         teamMember.setTeamMemberId(++sequence);
-        teamMemberRepository.put(teamMember.getMemberId(), teamMember);
+        teamMemberRepository.put(teamMember.getTeamMemberId(), teamMember);
         return teamMember;
     }
 
     /**
-     * 팀원 아이디로 teamMember 찾기
+     * 팀원 ID로 teamMember 찾기
      */
     public TeamMember findByTeamMemberId(Long teamMemberId) {
         return teamMemberRepository.get(teamMemberId);
     }
 
     /**
-     * 팀 아이디로 다수의 teamMember 찾기
+     * 팀 이름으로 다수의 teamMember 찾기
      */
-    public List<TeamMember> findByLoginId(Long teamId) {
+    public List<TeamMember> findByTeamName(String teamName) {
         return findAll().stream()
-                .filter(m -> m.getTeamId().equals(teamId))
+                .filter(m -> m.getTeam().getTeamName().equals(teamName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 멤버 이름으로 다수의 teamMember 찾기
+     */
+    public List<TeamMember> findByMemberName(String memberName) {
+        return findAll().stream()
+                .filter(m -> m.getMember().getName().equals(memberName))
                 .collect(Collectors.toList());
     }
 

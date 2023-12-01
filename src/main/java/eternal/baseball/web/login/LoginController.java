@@ -4,6 +4,7 @@ import eternal.baseball.domain.login.LoginService;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class LoginController {
@@ -51,8 +53,14 @@ public class LoginController {
 
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
         session.setAttribute(SessionConst.LOGIN_CHECK, SessionConst.LOGIN_VALID);
+        log.info("[login] redirectURL={}", redirectURL);
 
-        return "redirect:member/members";
+        if (redirectURL.equals("/")) {
+            log.info("[login] redirectURL=/");
+            return "redirect:member/members";
+        }
+
+        return "redirect:" + redirectURL;
     }
 
     /**

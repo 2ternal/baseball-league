@@ -20,6 +20,13 @@ public class TeamRepository {
     }
 
     /**
+     * 팀 ID로 team 찾기
+     */
+    public Team findByTeamId(Long teamId) {
+        return teamStore.get(teamId);
+    }
+
+    /**
      * 팀명으로 team 찾기
      */
     public Optional<Team> findByTeamName(String teamName) {

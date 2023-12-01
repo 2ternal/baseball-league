@@ -18,7 +18,7 @@
             <button class="btn btn-secondary float-end"
                     onclick="location.href='items.html'"
                     th:onclick="|location.href='@{/login}'|" type="button" th:text="#{page.login}">
-                로그인 버일
+                로그인 버튼
             </button>
         </div>
     </div>
@@ -28,7 +28,7 @@
     <div class="row">
         <div class="col">
             <button class="btn btn-primary float-end" type="button"
-                    th:onclick="|location.href='@{/member/members}'|">
+                    th:onclick="|location.href='@{/member/members}'|" th:text="#{page.member}">
                 회원 정보
             </button>
         </div>
@@ -40,7 +40,7 @@
         </div>
         <div class="col">
             <form th:action="@{/logout}" method="post">
-                <button class="btn btn-secondary float-end" type="submit">
+                <button class="btn btn-secondary float-end" type="submit" th:text="#{button.logout}">
                     로그아웃
                 </button>
             </form>
