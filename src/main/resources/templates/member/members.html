@@ -24,17 +24,18 @@
         <table class="table">
             <thead>
             <tr>
-                <th>ID</th>
-                <th>팀</th>
-                <th>이름</th>
-                <th>생년월일</th>
+                <th th:text="#{label.member.memberId}">ID</th>
+                <th th:text="#{label.member.loginId}">팀</th>
+                <th th:text="#{label.member.name}">이름</th>
+                <th th:text="#{label.member.birthday}">생년월일</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="member : ${members}">
-                <td><a href="member.html" th:href="@{/members/{memberId}(memberId=${member.loginId})}"
-                       th:text="${member.loginId}">회원 ID</a></td>
-                <td><a href="team.html" th:text="${member.name}">팀명</a></td>
+                <td><a href="member.html" th:href="@{/member/{memberId}(memberId=${member.memberId})}"
+                       th:text="${member.memberId}">회원 ID</a></td>
+                <td><a href="team.html" th:href="@{/member/{memberId}(memberId=${member.memberId})}"
+                       th:text="${member.loginId}">로그인 ID</a></td>
                 <td th:text="${member.name}">이름</td>
                 <td th:text="${member.birthday}">생년월일</td>
             </tr>

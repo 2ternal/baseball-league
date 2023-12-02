@@ -9,10 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,14 +23,18 @@ public class MemberController {
 
     @GetMapping("/members")
     public String members(Model model) {
+
         List<Member> members = memberRepository.findAll();
         model.addAttribute("members", members);
+
         return "member/members";
     }
 
     @GetMapping("/joinMember")
     public String joinMemberForm(Model model) {
+
         model.addAttribute("joinMemberForm", new JoinMemberForm());
+
         return "member/joinMemberForm";
     }
 
@@ -59,5 +60,14 @@ public class MemberController {
 
         memberRepository.save(member);
         return "redirect:members";
+    }
+
+    @GetMapping("/{memberId}")
+    public String member(@PathVariable Long memberId, Model model) {
+
+        Member member = memberRepository.findByMemberId(memberId);
+        model.addAttribute("member", member);
+
+        return "member/member";
     }
 }
