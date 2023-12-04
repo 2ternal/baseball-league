@@ -21,6 +21,9 @@ public class MemberController {
 
     private final MemberRepository memberRepository;
 
+    /**
+     * 회원 목록 페이지
+     */
     @GetMapping("/members")
     public String members(Model model) {
 
@@ -30,6 +33,9 @@ public class MemberController {
         return "member/members";
     }
 
+    /**
+     * 회원 가입 페이지
+     */
     @GetMapping("/joinMember")
     public String joinMemberForm(Model model) {
 
@@ -38,6 +44,9 @@ public class MemberController {
         return "member/joinMemberForm";
     }
 
+    /**
+     * 회원 가입
+     */
     @PostMapping("/joinMember")
     public String joinMember(@Validated @ModelAttribute("joinMemberForm") JoinMemberForm joinMemberForm,
                              BindingResult bindingResult) {
@@ -62,6 +71,9 @@ public class MemberController {
         return "redirect:members";
     }
 
+    /**
+     * 회원 정보 페이지
+     */
     @GetMapping("/{memberId}")
     public String member(@PathVariable Long memberId, Model model) {
 

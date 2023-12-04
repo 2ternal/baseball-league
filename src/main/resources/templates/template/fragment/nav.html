@@ -9,6 +9,14 @@
 <div th:fragment="nav">
     <div class="row">
         <div class="col">
+            <button class="btn btn-secondary float-end"
+                    onclick="location.href='teams.html'"
+                    th:onclick="|location.href='@{/team/teams}'|"
+                    type="button" th:text="#{button.teams}">
+                팀 목록으로
+            </button>
+        </div>
+        <div class="col">
             <button class="btn btn-primary float-end" type="button"
                     th:onclick="|location.href='@{/member/joinMember}'|"
                     th:text="#{page.addMember}">
@@ -28,6 +36,14 @@
 
 <div th:fragment="loginNav">
     <div class="row">
+        <div class="col">
+            <button class="btn btn-secondary float-end"
+                    onclick="location.href='teams.html'"
+                    th:onclick="|location.href='@{/team/teams}'|"
+                    type="button" th:text="#{button.teams}">
+                팀 목록으로
+            </button>
+        </div>
         <div class="col">
             <button class="btn btn-primary float-end" type="button"
                     th:onclick="|location.href='@{/member/{memberId}(memberId=${session.loginMember.memberId})}'|"

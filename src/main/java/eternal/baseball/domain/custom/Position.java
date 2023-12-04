@@ -6,7 +6,7 @@ public enum Position {
     LEFT("좌익수"), CENTER("중견수"), RIGHT("우익수"),
     CATCHER("포수"), PITCHER("투수"), NONE("없음");
 
-    private final String description;
+    public final String description;
 
     Position(String description) {
         this.description = description;

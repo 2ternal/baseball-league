@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -87,7 +86,7 @@ public class TeamController {
         teamMemberRepository.save(teamMember);
         log.info("[createTeam] teamMember={}", teamMember);
 
-        return "redirect:teams";
+        return "team/teams";
     }
 
     @GetMapping("/{teamId}")

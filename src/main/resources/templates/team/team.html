@@ -56,9 +56,9 @@
             </thead>
             <tbody>
             <tr th:each="teamMember : ${teamMembers}">
-                <td><a href="team.html" th:href="@{/member/{memberId}(memberId=${teamMember.member.memberId})}"
+                <td><a href="team.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${teamMember.teamMemberId})}"
                        th:text="${teamMember.member.memberId}">팀원 ID</a></td>
-                <td><a href="team.html" th:href="@{/member/{memberId}(memberId=${teamMember.member.memberId})}"
+                <td><a href="team.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${teamMember.teamMemberId})}"
                        th:text="${teamMember.member.name}">이름</a></td>
                 <td th:text="${teamMember.memberShip}">선수 분류</td>
                 <td th:text="${teamMember.mainPosition}">메인 포지션</td>
@@ -72,10 +72,18 @@
 
     <div class="row">
         <div class="col">
+            <button class="w-100 btn btn-primary btn-lg" type="button"
+                    th:onclick="|location.href='@{/teamMember/joinTeam/{teamId}(teamId=${team.teamId})}'|"
+                    th:text="#{page.joinTeam}">
+                팀 가입 버튼
+            </button>
+        </div>
+        <div class="col">
             <button class="w-100 btn btn-secondary btn-lg"
                     onclick="location.href='teams.html'"
                     th:onclick="|location.href='@{/team/teams}'|"
-                    type="button" th:text="#{button.list}">목록으로
+                    type="button" th:text="#{button.list}">
+                목록으로
             </button>
         </div>
     </div>
