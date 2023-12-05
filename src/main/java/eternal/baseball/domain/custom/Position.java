@@ -1,5 +1,7 @@
 package eternal.baseball.domain.custom;
 
+import java.util.stream.Stream;
+
 public enum Position {
 
     FIRST("1루수"), SECOND("2루수"), THIRD("3루수"), SHORT("유격수"),
@@ -10,6 +12,13 @@ public enum Position {
 
     Position(String description) {
         this.description = description;
+    }
+
+    public static Position from(String description) {
+        return Stream.of(Position.values())
+                .filter(p -> p.toString().equals(description))
+                .findFirst()
+                .orElse(null);
     }
 
     public String getDescription() {

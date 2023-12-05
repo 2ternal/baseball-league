@@ -1,6 +1,7 @@
 package eternal.baseball;
 
 import eternal.baseball.domain.custom.Birthday;
+import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.member.MemberRepository;
@@ -48,7 +49,7 @@ public class TestDataInit {
 
         teamRepository.save(team);
 
-        TeamMember teamMember = new TeamMember(member1, team, TeamMemberShip.OWNER);
+        TeamMember teamMember = new TeamMember(member1, team, TeamMemberShip.OWNER, Position.NONE, 10L);
 
         teamMemberRepository.save(teamMember);
     }

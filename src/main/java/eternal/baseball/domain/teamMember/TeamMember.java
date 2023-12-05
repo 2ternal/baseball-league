@@ -25,7 +25,7 @@ public class TeamMember {
         this.member = member;
         this.team = team;
         this.memberShip = TeamMemberShip.PLAYER;
-        this.mainPosition = joinTeamMemberDto.getMainPosition();
+        this.mainPosition = Position.from(joinTeamMemberDto.getMainPosition());
         this.backNumber = joinTeamMemberDto.getBackNumber();
     }
 
@@ -36,14 +36,15 @@ public class TeamMember {
     }
 
     public TeamMember(Member member, Team team, TeamMemberShip teamMemberShip,
-                              Position position) {
+                      Position mainPosition, Long backNumber) {
         this.member = member;
         this.team = team;
         this.memberShip = teamMemberShip;
-        this.mainPosition = position;
+        this.mainPosition = mainPosition;
+        this.backNumber = backNumber;
     }
 
-    public void addTeamMember(Member member, Team team, TeamMemberShip teamMemberShip,
+    public TeamMember(Member member, Team team, TeamMemberShip teamMemberShip,
                               JoinTeamMemberForm joinTeamMemberForm) {
         this.member = member;
         this.team = team;

@@ -122,9 +122,7 @@ public class TeamMemberController {
         Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
 
-        TeamMember teamMember = new TeamMember();
-        teamMember.addTeamMember(loginMember, joinTeam, TeamMemberShip.PLAYER, joinTeamMemberForm);
-
+        TeamMember teamMember = new TeamMember(loginMember, joinTeam, TeamMemberShip.PLAYER, joinTeamMemberForm);
         teamMemberRepository.save(teamMember);
         log.info("[joinTeam] joinTeamMember={}", teamMember);
 

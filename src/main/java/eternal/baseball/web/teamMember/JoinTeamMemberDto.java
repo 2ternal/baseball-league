@@ -8,6 +8,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -15,12 +16,13 @@ public class JoinTeamMemberDto {
 
     private String teamName;
     private String memberName;
-    //toDo : Position enum 에 @JsonCreator 적용
-    private Position mainPosition;
+    @NotEmpty
+    private String mainPosition;
     @Min(value = 0)
     @Max(value = 130)
     @NotNull
     private Long backNumber;
+
     public Position[] positions = Position.values();
 
     public JoinTeamMemberDto() {
