@@ -4,6 +4,7 @@ import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.team.Team;
+import eternal.baseball.web.teamMember.JoinTeamMemberDto;
 import eternal.baseball.web.teamMember.JoinTeamMemberForm;
 import lombok.Data;
 
@@ -20,23 +21,21 @@ public class TeamMember {
     public TeamMember() {
     }
 
-    public TeamMember(Long teamMemberId, Member member, Team team,
-                      TeamMemberShip memberShip, Position mainPosition, Long backNumber) {
-        this.teamMemberId = teamMemberId;
+    public TeamMember(Member member, Team team, JoinTeamMemberDto joinTeamMemberDto) {
         this.member = member;
         this.team = team;
-        this.memberShip = memberShip;
-        this.mainPosition = mainPosition;
-        this.backNumber = backNumber;
+        this.memberShip = TeamMemberShip.PLAYER;
+        this.mainPosition = joinTeamMemberDto.getMainPosition();
+        this.backNumber = joinTeamMemberDto.getBackNumber();
     }
 
-    public void addTeamMember(Member member, Team team, TeamMemberShip teamMemberShip) {
+    public TeamMember(Member member, Team team, TeamMemberShip teamMemberShip) {
         this.member = member;
         this.team = team;
         this.memberShip = teamMemberShip;
     }
 
-    public void addTeamMember(Member member, Team team, TeamMemberShip teamMemberShip,
+    public TeamMember(Member member, Team team, TeamMemberShip teamMemberShip,
                               Position position) {
         this.member = member;
         this.team = team;

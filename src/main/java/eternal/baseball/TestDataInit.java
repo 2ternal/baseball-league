@@ -48,8 +48,7 @@ public class TestDataInit {
 
         teamRepository.save(team);
 
-        TeamMember teamMember = new TeamMember();
-        teamMember.addTeamMember(member1, team, TeamMemberShip.OWNER);
+        TeamMember teamMember = new TeamMember(member1, team, TeamMemberShip.OWNER);
 
         teamMemberRepository.save(teamMember);
     }

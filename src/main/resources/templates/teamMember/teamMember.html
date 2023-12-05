@@ -50,7 +50,7 @@
     <div>
         <label for="mainPosition" th:text="#{label.teamMember.mainPosition}">mainPosition</label>
         <input type="text" id="mainPosition" name="mainPosition" class="form-control" value="Pitcher"
-               th:value="${teamMember.mainPosition}" readonly>
+               th:value="${teamMember.mainPosition.description}" readonly>
     </div>
     <div>
         <label for="backNumber" th:text="#{label.teamMember.backNumber}">backNumber</label>

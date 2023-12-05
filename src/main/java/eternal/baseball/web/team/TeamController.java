@@ -80,8 +80,7 @@ public class TeamController {
         log.info("[createTeam] team={}", team);
 
         //팀원에 추가
-        TeamMember teamMember = new TeamMember();
-        teamMember.addTeamMember(loginMember, team, TeamMemberShip.OWNER);
+        TeamMember teamMember = new TeamMember(loginMember, team, TeamMemberShip.OWNER);
 
         teamMemberRepository.save(teamMember);
         log.info("[createTeam] teamMember={}", teamMember);

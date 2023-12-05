@@ -19,9 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -48,9 +45,58 @@ public class TeamMemberController {
      * 팀 가입 페이지
      */
     @GetMapping("/joinTeam/{teamId}")
-    public String joinTeamForm(@PathVariable Long teamId, Model model, HttpServletRequest request) {
+    public String joinTeamFormV2(@PathVariable Long teamId, Model model, HttpServletRequest request) {
+
+        Member loginMember = getLoginMember(request);
+        Team joinTeam = teamRepository.findByTeamId(teamId);
+
+        JoinTeamMemberDto joinTeamMemberDto = new JoinTeamMemberDto(loginMember, joinTeam);
+        model.addAttribute("joinTeamMemberDto", joinTeamMemberDto);
+
+        return "teamMember/joinTeamMemberFormV2";
+    }
+
+    /**
+     * 팀 가입
+     */
+    @PostMapping("/joinTeam/{teamId}")
+    public String joinTeamV2(@PathVariable Long teamId,
+                             @Validated @ModelAttribute("joinTeamMemberDto") JoinTeamMemberDto joinTeamMemberDto,
+                             BindingResult bindingResult,
+                             HttpServletRequest request) {
+
+        if (bindingResult.hasErrors()) {
+            log.info("bindingResult={}", bindingResult);
+            return "teamMember/joinTeamMemberFormV2";
+        }
+
+        log.info("[joinTeamV2] joinTeamMemberDto={}", joinTeamMemberDto);
+
+        Member loginMember = getLoginMember(request);
+        Team joinTeam = teamRepository.findByTeamId(teamId);
+
+        /**
+         * Dto --> Entity
+         * joinTeamMemberDto의 toTeamMember()에서 teamMember의 생성자를 불러 teamMember를 만든다
+         * 괜찮은 방법인가?
+         */
+        TeamMember teamMember = joinTeamMemberDto.toTeamMember(loginMember, joinTeam);
+        teamMemberRepository.save(teamMember);
+        log.info("[joinTeamV2] teamMember={}", teamMember);
+
+        Long teamMemberId = teamMember.getTeamMemberId();
+
+        return "redirect:/teamMember/" + teamMemberId;
+    }
+
+    private static Member getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+    }
+
+    //    @GetMapping("/joinTeam/{teamId}")
+    public String joinTeamForm(@PathVariable Long teamId, Model model, HttpServletRequest request) {
+        Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
         Position[] positions = Position.values();
 
@@ -62,10 +108,7 @@ public class TeamMemberController {
         return "teamMember/joinTeamMemberForm";
     }
 
-    /**
-     * 팀 가입
-     */
-    @PostMapping("/joinTeam/{teamId}")
+    //    @PostMapping("/joinTeam/{teamId}")
     public String joinTeam(@PathVariable Long teamId,
                            @Validated @ModelAttribute("joinTeamMemberForm") JoinTeamMemberForm joinTeamMemberForm,
                            BindingResult bindingResult,
@@ -76,9 +119,7 @@ public class TeamMemberController {
             return "teamMember/joinTeamMemberForm";
         }
 
-        //toDo 메소드 줄이기
-        HttpSession session = request.getSession();
-        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
 
         TeamMember teamMember = new TeamMember();
