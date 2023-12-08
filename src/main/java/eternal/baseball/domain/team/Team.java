@@ -15,10 +15,10 @@ public class Team {
     public Team() {
     }
 
-    public Team(Long teamId, String teamName, String teamCode) {
-        this.teamId = teamId;
+    public Team(String teamName, String teamCode, Member member) {
         this.teamName = teamName;
         this.teamCode = teamCode;
+        this.owner = member;
     }
 
     public void createTeamFormToTeam(CreateTeamForm createTeamForm) {
