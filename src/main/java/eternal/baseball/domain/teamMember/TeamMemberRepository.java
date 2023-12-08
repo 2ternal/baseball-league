@@ -1,5 +1,7 @@
 package eternal.baseball.domain.teamMember;
 
+import eternal.baseball.domain.member.Member;
+import eternal.baseball.domain.team.Team;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -45,6 +47,17 @@ public class TeamMemberRepository {
         return findAll().stream()
                 .filter(m -> m.getMember().getName().equals(memberName))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 멤버의 팀 가입 여부 체크
+     */
+    public Boolean teamMemberCheck(Member member, Team team) {
+        return findAll().stream()
+                .filter(m -> m.getMember().equals(member))
+                .filter(m -> m.getTeam().equals(team))
+                .findFirst()
+                .isEmpty();
     }
 
     public List<TeamMember> findAll() {

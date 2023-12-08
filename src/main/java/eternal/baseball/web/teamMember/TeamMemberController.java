@@ -8,6 +8,7 @@ import eternal.baseball.domain.team.Team;
 import eternal.baseball.domain.team.TeamRepository;
 import eternal.baseball.domain.teamMember.TeamMember;
 import eternal.baseball.domain.teamMember.TeamMemberRepository;
+import eternal.baseball.web.extension.AlertMessage;
 import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,16 @@ public class TeamMemberController {
         Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
 
+        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember, joinTeam);
+        log.info("[joinTeamFormV2] joinCheck={}", joinCheck);
+        if (joinCheck) {
+            log.info("[joinTeamFormV2] 이미 팀에 가입된 선수");
+            String redirectURI = "/team/" + teamId;
+            AlertMessage message = new AlertMessage("이미 팀에 가입되어 있습니다", redirectURI);
+            model.addAttribute("message", message);
+            return "template/alert";
+        }
+
         JoinTeamMemberDto joinTeamMemberDto = new JoinTeamMemberDto(loginMember, joinTeam);
         model.addAttribute("joinTeamMemberDto", joinTeamMemberDto);
 
@@ -74,6 +85,13 @@ public class TeamMemberController {
 
         Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
+
+        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember, joinTeam);
+        log.info("[joinTeamV2] joinCheck={}", joinCheck);
+        if (joinCheck) {
+            log.info("[joinTeamV2] 이미 팀에 가입된 선수");
+            return "redirect:/team/" + teamId;
+        }
 
         /**
          * Dto --> Entity

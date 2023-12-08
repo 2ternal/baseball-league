@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <th:block th:if="${#strings.length(message.message) != 0}">
+        <script>
+            top.alert("[[${message.message}]]");
+        </script>
+    </th:block>
+    <th:block th:if="${#strings.length(message.redirectURI) != 0}">
+        <script>
+            top.location.href = '[[${message.redirectURI}]]';
+        </script>
+    </th:block>
+</head>
+</html>
