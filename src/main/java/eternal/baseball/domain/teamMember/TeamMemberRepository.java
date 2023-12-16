@@ -32,11 +32,11 @@ public class TeamMemberRepository {
     }
 
     /**
-     * 팀 이름으로 다수의 teamMember 찾기
+     * 팀 ID로 다수의 teamMember 찾기
      */
-    public List<TeamMember> findByTeamName(String teamName) {
+    public List<TeamMember> findByTeamId(Long teamId) {
         return findAll().stream()
-                .filter(m -> m.getTeam().getTeamName().equals(teamName))
+                .filter(m -> m.getTeam().getTeamId().equals(teamId))
                 .collect(Collectors.toList());
     }
 
@@ -46,6 +46,15 @@ public class TeamMemberRepository {
     public List<TeamMember> findByMemberName(String memberName) {
         return findAll().stream()
                 .filter(m -> m.getMember().getName().equals(memberName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 팀 이름으로 다수의 teamMember 찾기
+     */
+    public ArrayList<TeamMember> findByTeamName(String teamName) {
+        return (ArrayList<TeamMember>) findAll().stream()
+                .filter(m -> m.getTeam().getTeamName().equals(teamName))
                 .collect(Collectors.toList());
     }
 

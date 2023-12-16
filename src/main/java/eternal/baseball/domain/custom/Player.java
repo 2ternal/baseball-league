@@ -1,18 +1,35 @@
 package eternal.baseball.domain.custom;
 
+import eternal.baseball.domain.teamMember.TeamMember;
 import lombok.Data;
 
 @Data
 public class Player {
 
-    private Long teamMemberId;
+    private TeamMember teamMember;
     private Position position;
+    private Integer battingOrder;
+    private Boolean check = false;
 
     public Player() {
     }
 
-    public Player(Long teamMemberId, Position position) {
-        this.teamMemberId = teamMemberId;
+    public Player(TeamMember teamMember) {
+        this.teamMember = teamMember;
+        this.position = Position.NONE;
+        this.battingOrder = 0;
+    }
+
+    public Player(TeamMember teamMember, Position position, Integer battingOrder) {
+        this.teamMember = teamMember;
         this.position = position;
+        this.battingOrder = battingOrder;
+    }
+
+    public Player(TeamMember teamMember, Position position, Integer battingOrder, Boolean check) {
+        this.teamMember = teamMember;
+        this.position = position;
+        this.battingOrder = battingOrder;
+        this.check = check;
     }
 }

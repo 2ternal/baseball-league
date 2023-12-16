@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <link th:href="@{/css/bootstrap.min.css}"
+          href="../css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container" style="max-width: 600px">
+    <div class="py-5 text-center">
+        <h2>팀 목록</h2>
+    </div>
+    <div class="row">
+        <th:block th:if="${session.loginCheck == null}">
+            <div th:replace="template/fragment/nav :: nav"></div>
+        </th:block>
+        <th:block th:if="${session.loginCheck == 'Y'}">
+            <div th:replace="template/fragment/nav :: loginNav"></div>
+        </th:block>
+    </div>
+    <hr class="my-4">
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th th:text="#{label.lineup.lineupId}">lineupId</th>
+                <th th:text="#{label.lineup.writer}">writer</th>
+                <th th:text="#{label.lineup.lineup}">바로가기</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="lineup : ${lineupList}">
+                <td th:text="${lineup.lineupId}">lineupId</td>
+                <td><a href="teamMember.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${lineup.writer.teamMemberId})}"
+                       th:text="${lineup.writer}">writer</a></td>
+                <td><a href="lineup.html" th:href="@{/lineup/{lineupId}(lineupId=${lineup.lineupId})}"
+                       th:text="#{label.lineup.lineup}">바로가기</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col">
+            <button class="w-100 btn btn-primary btn-lg" type="button"
+                    th:onclick="|location.href='@{/lineup/{teamId}/create(teamId=${teamId})}'|"
+                    th:text="#{page.writeLineup}">
+                라인업 작성 버튼
+            </button>
+        </div>
+        <div class="col">
+            <button class="w-100 btn btn-secondary btn-lg"
+                    onclick="location.href='teams.html'"
+                    th:onclick="|location.href='@{/team/teams}'|"
+                    type="button" th:text="#{button.list}">
+                목록으로
+            </button>
+        </div>
+    </div>
+</div> <!-- /container -->
+
+</body>
+</html>
