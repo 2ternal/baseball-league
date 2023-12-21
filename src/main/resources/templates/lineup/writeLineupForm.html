@@ -23,6 +23,12 @@
                     $(this).prop("checked", false);
                     alert("2개까지만 선택 할 수 있습니다.");
                 }
+
+                let count2 = $("input:checked[id='bench']").length;
+                if(count2 == 2) {
+                    $(this).prop("checked", false);
+                    alert("주전 라인업에서 최소 1명의 선수를 선택해야 합니다.");
+                }
             });
         });
 
@@ -38,8 +44,11 @@
 
     <!-- 추가 -->
     <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
-    <form action="" th:action th:object="${lineupForm}" method="post">
+    <form action="" th:action th:object="${lineupChangeCard}" method="post">
         <!--        타순 테이블 만들 예정-->
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>
+        </div>
         <div>
             <table class="table">
                 <thead>
@@ -51,35 +60,27 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="starting : ${lineupForm.startingPlayers}">
-                    <td><input type="text"
-                               th:value="${starting.battingOrder}" readonly>
+                <tr th:each="starting, startingStat : ${lineupForm.startingPlayers}">
+                    <td th:text="${starting.orderNum}"></td>
+                    <td><input type="text" th:value="${starting.name}" readonly>
                     </td>
-                    <td><input type="text"
-                               th:value="${starting.teamMember.member.name}" readonly>
+                    <td><input type="text" th:value="${starting.position}" readonly>
                     </td>
-                    <td><input type="text"
-                               th:value="${starting.position}" readonly>
-                    </td>
-                    <td><input type="checkbox"
-                               th:value="${starting.check}">선택
+                    <td><input type="checkbox" th:name="${lineupNumber[startingStat.index]}"
+                               th:value="true">선택
                     </td>
                 </tr>
                 </tbody>
 
                 <tbody>
                 <tr th:each="bench : ${lineupForm.benchPlayers}">
-                    <td><input type="text"
-                               th:value="${bench.battingOrder}" readonly>
+                    <td th:text="--"></td>
+                    <td><input type="text" th:value="${bench.name}" readonly>
                     </td>
-                    <td><input type="text"
-                               th:value="${bench.teamMember.member.name}" readonly>
+                    <td><input type="text" th:value="${bench.position}" readonly>
                     </td>
-                    <td><input type="text"
-                               th:value="${bench.position}" readonly>
-                    </td>
-                    <td><input type="checkbox"
-                               th:value="${bench.check}">선택
+                    <td><input type="checkbox" id="bench" th:name="${lineupNumber[9]}"
+                               th:value="${bench.orderNum}">선택
                     </td>
                 </tr>
                 </tbody>

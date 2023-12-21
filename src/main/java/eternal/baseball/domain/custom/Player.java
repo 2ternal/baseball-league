@@ -9,7 +9,6 @@ public class Player {
     private TeamMember teamMember;
     private Position position;
     private Integer battingOrder;
-    private Boolean check = false;
 
     public Player() {
     }
@@ -24,12 +23,5 @@ public class Player {
         this.teamMember = teamMember;
         this.position = position;
         this.battingOrder = battingOrder;
-    }
-
-    public Player(TeamMember teamMember, Position position, Integer battingOrder, Boolean check) {
-        this.teamMember = teamMember;
-        this.position = position;
-        this.battingOrder = battingOrder;
-        this.check = check;
     }
 }

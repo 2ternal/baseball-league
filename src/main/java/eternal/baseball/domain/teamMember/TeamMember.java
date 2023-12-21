@@ -25,7 +25,7 @@ public class TeamMember {
         this.member = member;
         this.team = team;
         this.memberShip = TeamMemberShip.PLAYER;
-        this.mainPosition = Position.from(joinTeamMemberDto.getMainPosition());
+        this.mainPosition = Position.fromEng(joinTeamMemberDto.getMainPosition());
         this.backNumber = joinTeamMemberDto.getBackNumber();
     }
 
