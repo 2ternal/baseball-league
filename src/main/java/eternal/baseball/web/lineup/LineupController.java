@@ -162,7 +162,7 @@ public class LineupController {
         player1.setOrderNum(player2OrderNum);
 
         //교체
-        startingPlayers.set(player1OrderNum - 1, player2);
+        startingPlayers.set(player1OrderIndex, player2);
         if (player2OrderIndex < 9) {
             startingPlayers.set(player2OrderIndex, player1);
         } else {
@@ -189,11 +189,78 @@ public class LineupController {
      */
     @PostMapping("/{teamId}/changePosition")
     public String changePosition(@PathVariable Long teamId,
-                                 @ModelAttribute("lineupForm") LineupFormDto lineupForm,
+                                 @ModelAttribute("LineupChangeCard") LineupChangeCard lineupChangeCard,
                                  BindingResult bindingResult,
+                                 HttpServletRequest request,
+                                 RedirectAttributes redirectAttributes,
                                  Model model) {
+
+        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        List<Boolean> trueList = lineupChangeCard.isTrueList();
         log.info("[changePosition] lineupForm={}", lineupForm);
-//        model.addAttribute("lineupForm", lineupForm);
+
+        ArrayList<PlayerForm> startingPlayers = lineupForm.getStartingPlayers();
+
+        PlayerForm player1 = null;
+        int player1OrderIndex = 0;
+        for (Boolean tf : trueList) {
+            if (tf) {
+                player1 = startingPlayers.get(player1OrderIndex);
+                break;
+            }
+            player1OrderIndex++;
+        }
+
+        if (player1 == null) {
+            //주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다
+            //jquery 로 이미 처리한 부분
+            log.info("[changePosition] ====player1 is null====");
+            bindingResult.reject("needStarting", "주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다");
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult;", bindingResult);
+            redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
+            return "redirect:/lineup/" + teamId + "/create";
+        }
+
+        PlayerForm player2 = null;
+        int player2OrderIndex = 0;
+        for (int i = player1OrderIndex + 1; i < 9; i++) {
+            if (trueList.get(i)) {
+                player2 = startingPlayers.get(i);
+                player2OrderIndex = i;
+                break;
+            }
+        }
+
+        if (player2 == null) {
+            //주전 라인업에서 2명의 선수를 선택해야 합니다
+            log.info("[changePosition] ====player2 is null====");
+            bindingResult.reject("needTwoStartingPlayers", "2명의 선수를 선택해야 합니다");
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult;", bindingResult);
+            redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
+            return "redirect:/lineup/" + teamId + "/create";
+        }
+
+        log.info("[changePosition] player1={}", player1);
+        log.info("[changePosition] player2={}", player2);
+
+        String player1Position = player1.getPosition();
+        String player2Position = player2.getPosition();
+
+        player1.setPosition(player2Position);
+        player2.setPosition(player1Position);
+
+        //교체
+        startingPlayers.set(player1OrderIndex, player1);
+        startingPlayers.set(player2OrderIndex, player2);
+
+        log.info("[changePosition] after player1={}", player1);
+        log.info("[changePosition] after player2={}", player2);
+
+        lineupForm.setStartingPlayers(startingPlayers);
+
+        //redirect 설정
+        redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
+
         model.addAttribute("teamId", teamId);
         return "redirect:/lineup/" + teamId + "/create";
     }
