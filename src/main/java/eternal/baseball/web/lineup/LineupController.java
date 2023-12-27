@@ -302,7 +302,7 @@ public class LineupController {
         lineupRepository.save(lineup);
         log.info("[writeLineup] lineup={}", lineup);
 
-        return "redirect:/team/" + teamId;
+        return "redirect:/lineup/" + teamId + "/list";
     }
 
     @ModelAttribute("lineupNumber")

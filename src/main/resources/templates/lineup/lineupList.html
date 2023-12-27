@@ -9,7 +9,7 @@
 
 <div class="container" style="max-width: 600px">
     <div class="py-5 text-center">
-        <h2>팀 목록</h2>
+        <h2 th:text="#{page.lineupList}">라인업 목록</h2>
     </div>
     <div class="row">
         <th:block th:if="${session.loginCheck == null}">
@@ -33,7 +33,7 @@
             <tr th:each="lineup : ${lineupList}">
                 <td th:text="${lineup.lineupId}">lineupId</td>
                 <td><a href="teamMember.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${lineup.writer.teamMemberId})}"
-                       th:text="${lineup.writer}">writer</a></td>
+                       th:text="${lineup.writer.member.name}">writer</a></td>
                 <td><a href="lineup.html" th:href="@{/lineup/{lineupId}(lineupId=${lineup.lineupId})}"
                        th:text="#{label.lineup.lineup}">바로가기</a></td>
             </tr>

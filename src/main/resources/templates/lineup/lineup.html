@@ -1,10 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8">
+    <link th:href="@{/css/bootstrap.min.css}"
+          href="../css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 560px;
+        }
+    </style>
 </head>
 <body>
 
+<div class="container">
+
+    <div class="py-5 text-center">
+        <h2 th:text="#{page.lineup}">라인업 상세</h2>
+    </div>
+
+    <div>
+        <label for="teamName" th:text="#{label.team.teamName}">팀명</label>
+        <input type="text" id="teamName" name="teamName" class="form-control" value="팀A"
+               th:value="${lineup.team.teamName}" readonly>
+    </div>
+    <div>
+        <label for="writer" th:text="#{label.lineup.writer}">작성자</label>
+        <input type="text" id="writer" name="writer" class="form-control" value="Owner"
+               th:value="${lineup.writer.member.name}" readonly>
+    </div>
+
+    <hr class="my-4">
+
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th th:text="#{label.lineup.orderNum}">타순</th>
+                <th th:text="#{label.lineup.player}">선수</th>
+                <th th:text="#{label.teamMember.backNumber}">등번호</th>
+                <th th:text="#{label.lineup.position}">포지션</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="starting : ${lineup.lineupCard}">
+                <td th:text="${starting.orderNum}">타순</td>
+                <td><a th:text="${starting.teamMember.member.name}"
+                       th:href="@{/teamMember/{teamMemberId}(teamMemberId=${starting.teamMember.teamMemberId})}">선수</a>
+                </td>
+                <td th:text="${starting.teamMember.backNumber}">등번호</td>
+                <td th:text="${starting.position.description}">포지션</td>
+            </tr>
+            </tbody>
+
+            <tbody>
+            <tr th:each="bench : ${lineup.bench}">
+                <td th:text="--">타순</td>
+                <td><a th:text="${bench.teamMember.member.name}"
+                       th:href="@{/teamMember/{teamMemberId}(teamMemberId=${bench.teamMember.teamMemberId})}">선수</a>
+                </td>
+                <td th:text="${bench.teamMember.backNumber}">등번호</td>
+                <td th:text="${bench.position.description}">포지션</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col">
+            <button class="w-100 btn btn-secondary btn-lg"
+                    onclick="location.href='teams.html'"
+                    th:onclick="|location.href='@{/lineup/{teamId}/list(teamId=${lineup.team.teamId})}'|"
+                    type="button" th:text="#{button.list.lineup}">
+                라인업 목록으로
+            </button>
+        </div>
+    </div>
+
+</div> <!-- /container -->
 </body>
 </html>
