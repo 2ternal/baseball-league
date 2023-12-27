@@ -8,7 +8,7 @@ public class Player {
 
     private TeamMember teamMember;
     private Position position;
-    private Integer battingOrder;
+    private Integer orderNum;
 
     public Player() {
     }
@@ -16,12 +16,12 @@ public class Player {
     public Player(TeamMember teamMember) {
         this.teamMember = teamMember;
         this.position = Position.NONE;
-        this.battingOrder = 0;
+        this.orderNum = 0;
     }
 
     public Player(TeamMember teamMember, Position position, Integer battingOrder) {
         this.teamMember = teamMember;
         this.position = position;
-        this.battingOrder = battingOrder;
+        this.orderNum = battingOrder;
     }
 }

@@ -1,8 +1,10 @@
 package eternal.baseball.web.lineup;
 
+import eternal.baseball.domain.custom.Player;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.lineup.Lineup;
 import eternal.baseball.domain.lineup.LineupRepository;
+import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.team.TeamRepository;
 import eternal.baseball.domain.teamMember.TeamMember;
 import eternal.baseball.domain.teamMember.TeamMemberRepository;
@@ -20,6 +22,8 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -270,22 +274,33 @@ public class LineupController {
      */
     @PostMapping("/{teamId}/create")
     public String writeLineup(@PathVariable Long teamId,
-                              @ModelAttribute("LineupChangeCard") LineupChangeCard lineupChangeCard,
-                              BindingResult bindingResult,
                               HttpServletRequest request,
                               Model model) {
-        log.info("[writeLineup] lineupChangeCard={}", lineupChangeCard);
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
-        log.info("[writeLineup] lineupForm={}", lineupForm);
 
-        /**
-         * todo
-         * - teamMember 에 중복 불가능한 닉네임 혹은 멤버 이름 추가
-         * - lineupForm 필드 개선
-         * - writeLineupForm.html 개선
-         * - 마저 구현하지 못한 기능들 구현
-         * - GET 에서 쓴 객체 POST 에서 그대로 쓰는 방법 찾기
-         */
+        LineupFormDto lineupFormDto = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        log.info("[writeLineup] lineupForm={}", lineupFormDto);
+
+        Lineup lineup = new Lineup();
+
+        //오우쉣
+        LineupForm lineupForm = toLineupForm(lineupFormDto);
+        log.info("[writeLineup] convert lineupForm success!!");
+
+        TeamMember loginTeamMember = teamMemberRepository.findByTeamId(teamId).stream()
+                .filter(tm -> tm.getMember().equals(loginMember))
+                .findFirst()
+                .orElse(null);
+
+        log.info("[writeLineup] loginTeamMember={}", loginTeamMember);
+
+        lineup.setTeam(teamRepository.findByTeamId(teamId));
+        lineup.setWriter(loginTeamMember);
+        lineup.setLineupCard(lineupForm.getStartingPlayers());
+        lineup.setBench(lineupForm.getBenchPlayers());
+
+        lineupRepository.save(lineup);
+        log.info("[writeLineup] lineup={}", lineup);
 
         return "redirect:/team/" + teamId;
     }
@@ -304,5 +319,28 @@ public class LineupController {
         lineupNumber.add("nine");
         lineupNumber.add("bench");
         return lineupNumber;
+    }
+
+    public LineupForm toLineupForm(LineupFormDto lineupFormDto) {
+
+        LineupForm lineupForm = new LineupForm();
+        ArrayList<PlayerForm> startingPlayers = lineupFormDto.getStartingPlayers();
+        ArrayList<PlayerForm> benchPlayers = lineupFormDto.getBenchPlayers();
+
+        ArrayList<Player> starting = (ArrayList<Player>) startingPlayers.stream()
+                .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))
+                .collect(Collectors.toList());
+
+        ArrayList<Player> bench = (ArrayList<Player>) benchPlayers.stream()
+                .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))
+                .collect(Collectors.toList());
+
+        log.info("[toLineupForm] starting={}", starting);
+        log.info("[toLineupForm] bench={}", bench);
+
+        lineupForm.setStartingPlayers(starting);
+        lineupForm.setBenchPlayers(bench);
+
+        return lineupForm;
     }
 }
