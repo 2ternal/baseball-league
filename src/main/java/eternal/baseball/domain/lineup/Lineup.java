@@ -6,8 +6,6 @@ import eternal.baseball.domain.teamMember.TeamMember;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 @Data
 public class Lineup {

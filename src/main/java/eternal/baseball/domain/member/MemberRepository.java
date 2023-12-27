@@ -7,7 +7,7 @@ import java.util.*;
 @Repository
 public class MemberRepository {
 
-    private static Map<Long, Member> memberStore = new HashMap<>();
+    private static final Map<Long, Member> memberStore = new HashMap<>();
     private static Long sequence = 0L;
 
     //새 멤버 추가

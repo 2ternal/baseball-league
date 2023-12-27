@@ -21,8 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -283,7 +281,7 @@ public class LineupController {
 
         Lineup lineup = new Lineup();
 
-        //오우쉣
+        //라인업 저장을 위한 convert 과정
         LineupForm lineupForm = toLineupForm(lineupFormDto);
         log.info("[writeLineup] convert lineupForm success!!");
 

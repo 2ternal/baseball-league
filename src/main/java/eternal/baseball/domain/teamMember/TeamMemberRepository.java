@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Repository
 public class TeamMemberRepository {
 
-    private static HashMap<Long, TeamMember> teamMemberRepository = new HashMap<>();
+    private static final HashMap<Long, TeamMember> teamMemberRepository = new HashMap<>();
     private static Long sequence = 0L;
 
     /**

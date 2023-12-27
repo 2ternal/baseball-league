@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Repository
 public class LineupRepository {
 
-    private static Map<Long, Lineup> lineupRepository = new HashMap<>();
+    private static final Map<Long, Lineup> lineupRepository = new HashMap<>();
     private static Long sequence = 0L;
 
     /**

@@ -7,7 +7,7 @@ import java.util.*;
 @Repository
 public class TeamRepository {
 
-    private static Map<Long, Team> teamStore = new HashMap<>();
+    private static final Map<Long, Team> teamStore = new HashMap<>();
     private static Long sequence = 0L;
 
     /**
