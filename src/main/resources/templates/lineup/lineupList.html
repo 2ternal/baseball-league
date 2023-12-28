@@ -34,7 +34,7 @@
                 <td th:text="${lineup.lineupId}">lineupId</td>
                 <td><a href="teamMember.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${lineup.writer.teamMemberId})}"
                        th:text="${lineup.writer.member.name}">writer</a></td>
-                <td><a href="lineup.html" th:href="@{/lineup/{lineupId}(lineupId=${lineup.lineupId})}"
+                <td><a href="lineup.html" th:href="@{/lineup/{teamId}/{lineupId}(teamId=${teamId}, lineupId=${lineup.lineupId})}"
                        th:text="#{label.lineup.lineup}">바로가기</a></td>
             </tr>
             </tbody>

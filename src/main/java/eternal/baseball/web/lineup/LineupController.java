@@ -8,6 +8,7 @@ import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.team.TeamRepository;
 import eternal.baseball.domain.teamMember.TeamMember;
 import eternal.baseball.domain.teamMember.TeamMemberRepository;
+import eternal.baseball.web.extension.AlertMessage;
 import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,8 @@ public class LineupController {
     /**
      * 라인업 상세 페이지
      */
-    @GetMapping("/{lineupId}")
-    public String lineup(@PathVariable Long lineupId, Model model) {
+    @GetMapping("/{teamId}/{lineupId}")
+    public String lineup(@PathVariable Long teamId, @PathVariable Long lineupId, Model model) {
         Lineup lineup = lineupRepository.findByLineupId(lineupId);
         model.addAttribute("lineup", lineup);
         return "lineup/lineup";
@@ -68,6 +69,14 @@ public class LineupController {
 
         if (lineupForm.getStartingPlayers() == null) {
             ArrayList<TeamMember> teamMembers = (ArrayList<TeamMember>) teamMemberRepository.findByTeamId(teamId);
+            if (teamMembers.size() < 9) {
+                log.info("[writeLineupForm] be short of teamMember={}", teamMembers.size());
+                String redirectURI = request.getHeader("REFERER");
+                AlertMessage message = new AlertMessage("팀원이 부족합니다", redirectURI);
+                model.addAttribute("message", message);
+                return "template/alert";
+            }
+
             lineupForm = new LineupFormDto(teamMembers);
             log.info("[writeLineupForm] ====lineupForm is null====");
         }

@@ -25,12 +25,13 @@ public class TeamCheckInterceptor implements HandlerInterceptor {
         String requestURI = request.getRequestURI();
         String referer = request.getHeader("REFERER");
 
+        log.info("[TeamCheckInterceptor] 팀 가입 체크 인터셉터 실행 in [{}]", requestURI);
+        log.info("[TeamCheckInterceptor] 이전 url={}", referer);
+
         Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
         Long teamId = Long.parseLong(requestURI.substring(8, requestURI.lastIndexOf("/")));
 
         log.info("[TeamCheckInterceptor] 팀 Id={}", teamId);
-        log.info("[TeamCheckInterceptor] 팀 가입 체크 인터셉터 실행 in [{}]", requestURI);
-        log.info("[TeamCheckInterceptor] 이전 url={}", referer);
 
         Boolean teamMemberCheck = teamMemberRepository.teamMemberCheck(loginMember.getMemberId(), teamId);
 

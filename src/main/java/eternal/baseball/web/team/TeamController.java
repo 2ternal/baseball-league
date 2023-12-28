@@ -85,7 +85,7 @@ public class TeamController {
         teamMemberRepository.save(teamMember);
         log.info("[createTeam] teamMember={}", teamMember);
 
-        return "team/teams";
+        return "redirect:/team/teams";
     }
 
     @GetMapping("/{teamId}")
