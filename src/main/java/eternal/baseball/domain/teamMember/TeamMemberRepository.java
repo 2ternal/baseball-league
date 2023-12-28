@@ -61,10 +61,10 @@ public class TeamMemberRepository {
     /**
      * 멤버의 팀 가입 여부 체크
      */
-    public Boolean teamMemberCheck(Member member, Team team) {
+    public Boolean teamMemberCheck(Long memberId, Long teamId) {
         return findAll().stream()
-                .filter(m -> m.getMember().equals(member))
-                .filter(m -> m.getTeam().equals(team))
+                .filter(m -> m.getMember().getMemberId().equals(memberId))
+                .filter(m -> m.getTeam().getTeamId().equals(teamId))
                 .findFirst()
                 .isEmpty();
     }

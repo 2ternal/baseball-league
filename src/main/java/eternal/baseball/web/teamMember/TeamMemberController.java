@@ -51,7 +51,7 @@ public class TeamMemberController {
         Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
 
-        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember, joinTeam);
+        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamId());
         log.info("[joinTeamFormV2] joinCheck={}", joinCheck);
         if (joinCheck) {
             log.info("[joinTeamFormV2] 이미 팀에 가입된 선수");
@@ -86,7 +86,7 @@ public class TeamMemberController {
         Member loginMember = getLoginMember(request);
         Team joinTeam = teamRepository.findByTeamId(teamId);
 
-        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember, joinTeam);
+        Boolean joinCheck = !teamMemberRepository.teamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamId());
         log.info("[joinTeamV2] joinCheck={}", joinCheck);
         if (joinCheck) {
             log.info("[joinTeamV2] 이미 팀에 가입된 선수");
