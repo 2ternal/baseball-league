@@ -1,7 +1,9 @@
 package eternal.baseball.web.member;
 
+import eternal.baseball.domain.custom.Birthday;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.member.MemberRepository;
+import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -11,6 +13,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j
@@ -81,5 +85,75 @@ public class MemberController {
         model.addAttribute("member", member);
 
         return "member/member";
+    }
+
+    /**
+     * 내 정보 페이지
+     */
+    @GetMapping("/myPage")
+    public String myPageForm(Model model, HttpServletRequest request) {
+
+        Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        model.addAttribute("loginMember", loginMember);
+
+        return "member/myPage";
+    }
+
+    /**
+     * 회원 정보 수정 페이지
+     */
+    @GetMapping("/editMember")
+    public String editMemberForm(@ModelAttribute("loginMember") EditMemberForm loginMember,
+                                 HttpServletRequest request) {
+        if (loginMember.getName() == null) {
+            Member member = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+            loginMember.setMemberId(member.getMemberId());
+            loginMember.setLoginId(member.getLoginId());
+            loginMember.setName(member.getName());
+            loginMember.setYear(member.getBirthday().getYear());
+            loginMember.setMonth(member.getBirthday().getMonth());
+            loginMember.setDay(member.getBirthday().getDay());
+        }
+        return "member/editMemberForm";
+    }
+
+    /**
+     * 회원 정보 수정
+     */
+    @PostMapping("/editMember")
+    public String editMember(@Validated @ModelAttribute("loginMember") EditMemberForm loginMember,
+                             BindingResult bindingResult,
+                             HttpServletRequest request) {
+
+        if (bindingResult.hasErrors()) {
+            return "member/editMemberForm";
+        }
+
+        Member sessionMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+
+        if (!sessionMember.getPassword().equals(loginMember.getPassword())) {
+            bindingResult.reject("wrongPassword", "비밀번호가 틀립니다");
+            return "member/editMemberForm";
+        }
+
+        if (!loginMember.getChangePassword().equals(loginMember.getChangePasswordCheck())) {
+            bindingResult.reject("wrongChangePassword", "변경할 비밀번호가 일치하지 않습니다");
+            return "member/editMemberForm";
+        }
+
+        sessionMember.setName(loginMember.getName());
+        sessionMember.setBirthday(new Birthday(loginMember.getYear(), loginMember.getMonth(), loginMember.getDay()));
+        if (!loginMember.getChangePassword().isEmpty()) {
+            sessionMember.setPassword(loginMember.getChangePassword());
+        }
+
+        Member editMember = memberRepository.edit(loginMember.getMemberId(), sessionMember);
+
+        log.info("[editMember] editMember={}", editMember);
+
+        HttpSession session = request.getSession();
+        session.setAttribute(SessionConst.LOGIN_MEMBER, sessionMember);
+
+        return "redirect:myPage";
     }
 }

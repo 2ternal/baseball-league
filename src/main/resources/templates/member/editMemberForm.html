@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <link th:href="@{/css/bootstrap.min.css}"
+          href="../css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 560px;
+        }
+        .field-error {
+              border-color: #dc3545;
+              color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="py-5 text-center">
+        <h2 th:text="#{page.member}">내 정보</h2>
+    </div>
+
+    <!-- 추가 -->
+    <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
+
+    <form th:action th:object="${loginMember}" method="post">
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>
+        </div>
+        <div>
+            <label for="memberId" th:text="#{label.member.memberId}">회원 ID</label>
+            <input type="text" id="memberId" name="memberId"
+                   class="form-control"
+                   value="1" th:value="${loginMember.memberId}" readonly>
+        </div>
+        <div>
+            <label for="loginId" th:text="#{label.member.loginId}">로그인 ID</label>
+            <input type="text" id="loginId" name="loginId"
+                   class="form-control"
+                   value="member" th:value="${loginMember.loginId}" readonly>
+        </div>
+        <div>
+            <label for="name" th:text="#{label.member.name}">이름</label>
+            <input type="text" id="name" name="name" th:field="*{name}"
+                   class="form-control"
+                   value="회원" th:value="${loginMember.name}">
+        </div>
+        <div>
+            <label for="year">생일 년도</label>
+            <input type="number" id="year" th:field="*{year}"
+                   class="form-control" th:errorclass="field-error"
+                   th:value="${loginMember.year}"
+                   placeholder="연도를 입력하세요">
+            <div class="field-error" th:errors="*{year}">
+                생년월일 오류
+            </div>
+        </div>
+        <div>
+            <label for="month">생일 월</label>
+            <input type="number" id="month" th:field="*{month}"
+                   class="form-control" th:errorclass="field-error"
+                   th:value="${loginMember.month}"
+                   placeholder="월을 입력하세요">
+            <div class="field-error" th:errors="*{month}">
+                생년월일 오류
+            </div>
+        </div>
+        <div>
+            <label for="day">생일 일</label>
+            <input type="number" id="day" th:field="*{day}"
+                   class="form-control" th:errorclass="field-error"
+                   th:value="${loginMember.day}"
+                   placeholder="날짜를 입력하세요">
+            <div class="field-error" th:errors="*{day}">
+                생년월일 오류
+            </div>
+        </div>
+        <div>
+            <label for="password">비밀번호</label>
+            <input type="text" id="password" th:field="*{password}"
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="현재 비밀번호 입력하세요">
+            <div class="field-error" th:errors="*{password}">
+                비밀번호 오류
+            </div>
+        </div>
+        <div>
+            <label for="changePassword">비밀번호 변경</label>
+            <input type="text" id="changePassword" th:field="*{changePassword}"
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="변경할 비밀번호를 입력하세요">
+            <div class="field-error" th:errors="*{changePassword}">
+                비밀번호 오류
+            </div>
+        </div>
+        <div>
+            <label for="changePasswordCheck">비밀번호 변경 확인</label>
+            <input type="text" id="changePasswordCheck" th:field="*{changePasswordCheck}"
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="변경할 비밀번호를 다시 입력하세요">
+            <div class="field-error" th:errors="*{changePasswordCheck}">
+                비밀번호 오류
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col">
+            <button class="w-100 btn btn-primary btn-lg"
+                    type="submit" th:text="#{button.edit}">정보수정
+            </button>
+        </div>
+    </form>
+
+
+    <hr class="my-4">
+
+    <div class="row">
+
+        <div class="col">
+            <button class="w-100 btn btn-secondary btn-lg"
+                    onclick="location.href='members.html'"
+                    th:onclick="|location.href='@{/member/members}'|"
+                    type="button" th:text="#{button.list}">목록으로
+            </button>
+        </div>
+    </div>
+
+</div> <!-- /container -->
+</body>
+</html>
