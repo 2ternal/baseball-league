@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class LineupFormDto {
 
+    private String lineupName;
     private ArrayList<PlayerForm> startingPlayers;
     private ArrayList<PlayerForm> benchPlayers;
 

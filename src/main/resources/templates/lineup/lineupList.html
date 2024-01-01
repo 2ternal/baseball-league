@@ -26,6 +26,8 @@
             <tr>
                 <th th:text="#{label.lineup.lineupId}">lineupId</th>
                 <th th:text="#{label.lineup.writer}">writer</th>
+                <th th:text="#{label.lineup.lineupName}">lineupName</th>
+                <th th:text="#{label.lineup.updateTime}">updateTime</th>
                 <th th:text="#{label.lineup.lineup}">바로가기</th>
             </tr>
             </thead>
@@ -34,6 +36,8 @@
                 <td th:text="${lineup.lineupId}">lineupId</td>
                 <td><a href="teamMember.html" th:href="@{/teamMember/{teamMemberId}(teamMemberId=${lineup.writer.teamMemberId})}"
                        th:text="${lineup.writer.member.name}">writer</a></td>
+                <td th:text="${lineup.lineupName}">lineupName</td>
+                <td th:text="${lineup.updateTime}">updateTime</td>
                 <td><a href="lineup.html" th:href="@{/lineup/{teamId}/{lineupId}(teamId=${teamId}, lineupId=${lineup.lineupId})}"
                        th:text="#{label.lineup.lineup}">바로가기</a></td>
             </tr>

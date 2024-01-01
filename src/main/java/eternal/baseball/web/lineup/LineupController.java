@@ -15,12 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -110,6 +112,7 @@ public class LineupController {
 
         LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         List<Boolean> trueList = lineupChangeCard.isTrueList();
+        lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
         ArrayList<PlayerForm> startingPlayers = lineupForm.getStartingPlayers();
         ArrayList<PlayerForm> benchPlayers = lineupForm.getBenchPlayers();
@@ -191,6 +194,7 @@ public class LineupController {
         //redirect 설정
         //세션에 담지 않고 redirectAttributes 로 플래시 세션에 담는다. 리다리엑트 후 소멸한다
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
+        redirectAttributes.addAttribute("status", true);
 
         return "redirect:/lineup/" + teamId + "/create";
     }
@@ -206,9 +210,14 @@ public class LineupController {
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
 
+        if (bindingResult.hasErrors()) {
+            return "lineup/writeLineupForm";
+        }
+
         LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         List<Boolean> trueList = lineupChangeCard.isTrueList();
         log.info("[changePosition] lineupForm={}", lineupForm);
+        lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
         ArrayList<PlayerForm> startingPlayers = lineupForm.getStartingPlayers();
 
@@ -271,6 +280,7 @@ public class LineupController {
 
         //redirect 설정
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
+        redirectAttributes.addAttribute("status", true);
 
         model.addAttribute("teamId", teamId);
         return "redirect:/lineup/" + teamId + "/create";
@@ -281,17 +291,29 @@ public class LineupController {
      */
     @PostMapping("/{teamId}/create")
     public String writeLineup(@PathVariable Long teamId,
+                              @Validated @ModelAttribute("LineupChangeCard") LineupChangeCard lineupChangeCard,
+                              BindingResult bindingResult,
                               HttpServletRequest request,
                               Model model) {
 
-        LineupFormDto lineupFormDto = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("lineupForm", lineupForm);
+            model.addAttribute("lineupChangeCard", lineupChangeCard);
+            model.addAttribute("teamId", teamId);
+            log.info("[writeLineup] bindingResult={}", bindingResult);
+            return "lineup/writeLineupForm";
+        }
+
+//        LineupFormDto lineupFormDto = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
-        log.info("[writeLineup] lineupForm={}", lineupFormDto);
+        log.info("[writeLineup] lineupForm={}", lineupForm);
 
         Lineup lineup = new Lineup();
 
         //라인업 저장을 위한 convert 과정
-        LineupForm lineupForm = toLineupForm(lineupFormDto);
+        ArrayList<Player> starting = getStarting(lineupForm);
+        ArrayList<Player> bench = getBench(lineupForm);
         log.info("[writeLineup] convert lineupForm success!!");
 
         TeamMember loginTeamMember = teamMemberRepository.findByTeamId(teamId).stream()
@@ -303,8 +325,10 @@ public class LineupController {
 
         lineup.setTeam(teamRepository.findByTeamId(teamId));
         lineup.setWriter(loginTeamMember);
-        lineup.setLineupCard(lineupForm.getStartingPlayers());
-        lineup.setBench(lineupForm.getBenchPlayers());
+        lineup.setLineupCard(starting);
+        lineup.setBench(bench);
+        lineup.setLineupName(lineupChangeCard.getLineupName());
+        lineup.setUpdateTime(new Date());
 
         lineupRepository.save(lineup);
         log.info("[writeLineup] lineup={}", lineup);
@@ -328,26 +352,29 @@ public class LineupController {
         return lineupNumber;
     }
 
-    public LineupForm toLineupForm(LineupFormDto lineupFormDto) {
+    public ArrayList<Player> getStarting(LineupFormDto lineupFormDto) {
 
-        LineupForm lineupForm = new LineupForm();
         ArrayList<PlayerForm> startingPlayers = lineupFormDto.getStartingPlayers();
-        ArrayList<PlayerForm> benchPlayers = lineupFormDto.getBenchPlayers();
 
         ArrayList<Player> starting = (ArrayList<Player>) startingPlayers.stream()
                 .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))
                 .collect(Collectors.toList());
 
+        log.info("[getStarting] starting={}", starting);
+
+        return starting;
+    }
+
+    public ArrayList<Player> getBench(LineupFormDto lineupFormDto) {
+
+        ArrayList<PlayerForm> benchPlayers = lineupFormDto.getBenchPlayers();
+
         ArrayList<Player> bench = (ArrayList<Player>) benchPlayers.stream()
                 .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))
                 .collect(Collectors.toList());
 
-        log.info("[toLineupForm] starting={}", starting);
-        log.info("[toLineupForm] bench={}", bench);
+        log.info("[getBench] bench={}", bench);
 
-        lineupForm.setStartingPlayers(starting);
-        lineupForm.setBenchPlayers(bench);
-
-        return lineupForm;
+        return bench;
     }
 }

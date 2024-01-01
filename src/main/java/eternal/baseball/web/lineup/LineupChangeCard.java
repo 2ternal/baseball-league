@@ -2,11 +2,15 @@ package eternal.baseball.web.lineup;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 public class LineupChangeCard {
+
+    @NotEmpty
+    private String lineupName;
     private boolean one;
     private boolean two;
     private boolean three;
