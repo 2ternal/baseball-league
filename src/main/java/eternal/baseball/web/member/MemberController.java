@@ -126,6 +126,7 @@ public class MemberController {
                              HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
+            log.info("[editMember] bindingResult={}", bindingResult);
             return "member/editMemberForm";
         }
 

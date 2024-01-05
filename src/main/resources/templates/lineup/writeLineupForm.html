@@ -16,7 +16,6 @@
             border-color: #40ef24;
             color: #40ef24;
         }
-
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
@@ -35,7 +34,6 @@
                 }
             });
         });
-
     </script>
 </head>
 <body>
@@ -48,7 +46,8 @@
 
     <!-- 추가 -->
     <h2 class="success-status" th:if="${param.status}" th:text="'교체 성공'"></h2>
-    <form action="" th:action th:object="${lineupChangeCard}" method="post">
+    <form action="" th:action="@{/lineup/{teamId}/create(teamId=${teamId})}"
+          th:object="${lineupChangeCard}" method="post">
         <!--        타순 테이블 만들 예정-->
         <div th:if="${#fields.hasGlobalErrors()}">
             <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>
@@ -56,11 +55,10 @@
         <div>
             <label for="lineupName">라인업 이름</label>
             <input type="text" id="lineupName" th:field="*{lineupName}"
-                   class="form-control" th:value="${lineupChangeCard.lineupName}"
+                   class="form-control" th:value="${lineupForm.lineupName}"
+                   th:errorclass="field-error"
                    placeholder="라인업 이름을 입력하세요">
-            <div class="field-error" th:errors="*{lineupName}">
-                라인업 이름 오류
-            </div>
+            <div class="field-error" th:errors="*{lineupName}"/>
         </div>
         <div>
             <table class="table">
