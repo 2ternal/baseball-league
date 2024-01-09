@@ -24,22 +24,56 @@
     <div>
         <label for="memberId" th:text="#{label.member.memberId}">회원 ID</label>
         <input type="text" id="memberId" name="memberId" class="form-control" value="1"
-               th:value="${loginMember.memberId}" readonly>
+               th:value="${loginMember.memberId}"
+               readonly>
     </div>
     <div>
         <label for="name" th:text="#{label.member.name}">이름</label>
-        <input type="text" id="name" name="name" class="form-control" value="회원" th:value="${loginMember.name}"
+        <input type="text" id="name" name="name" class="form-control" value="회원"
+               th:value="${loginMember.name}"
                readonly>
     </div>
     <div>
         <label for="loginId" th:text="#{label.member.loginId}">로그인 ID</label>
         <input type="text" id="loginId" name="loginId" class="form-control" value="member"
-               th:value="${loginMember.loginId}" readonly>
+               th:value="${loginMember.loginId}"
+               readonly>
     </div>
     <div>
         <label for="birthday" th:text="#{label.member.birthday}">생년월일</label>
         <input type="text" id="birthday" name="birthday" class="form-control" value="20010101"
-               th:value="${loginMember.birthday}" readonly>
+               th:value="${loginMember.birthday}"
+               readonly>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="py-1 text-center">
+        <h4 th:text="#{label.myPage.team}">소속팀</h4>
+    </div>
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th th:text="#{label.team.teamName}">팀</th>
+                <th th:text="#{label.team.teamCode}">팀 코드</th>
+                <th th:text="#{label.teamMember.memberShip}">선수 분류</th>
+                <th th:text="#{label.teamMember.mainPosition}">메인 포지션</th>
+                <th th:text="#{label.teamMember.backNumber}">등번호</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="teamMember : ${teamMemberList}">
+                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${teamMember.team.teamId})}"
+                       th:text="${teamMember.team.teamName}">팀</a></td>
+                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${teamMember.team.teamId})}"
+                       th:text="${teamMember.team.teamCode}">팀 코드</a></td>
+                <td th:text="${teamMember.memberShip}">선수 분류</td>
+                <td th:text="${teamMember.mainPosition}">메인 포지션</td>
+                <td th:text="${teamMember.backNumber}">등번호</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
     <hr class="my-4">

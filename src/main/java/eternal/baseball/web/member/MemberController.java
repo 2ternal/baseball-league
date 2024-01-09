@@ -3,6 +3,8 @@ package eternal.baseball.web.member;
 import eternal.baseball.domain.custom.Birthday;
 import eternal.baseball.domain.member.Member;
 import eternal.baseball.domain.member.MemberRepository;
+import eternal.baseball.domain.teamMember.TeamMember;
+import eternal.baseball.domain.teamMember.TeamMemberRepository;
 import eternal.baseball.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import java.util.Objects;
 public class MemberController {
 
     private final MemberRepository memberRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     /**
      * 회원 목록 페이지
@@ -94,7 +97,10 @@ public class MemberController {
     public String member(@PathVariable Long memberId, Model model) {
 
         Member member = memberRepository.findByMemberId(memberId);
+        List<TeamMember> teamMemberList = teamMemberRepository.findByMemberName(member.getName());
+
         model.addAttribute("member", member);
+        model.addAttribute("teamMemberList", teamMemberList);
 
         return "member/member";
     }
@@ -106,7 +112,10 @@ public class MemberController {
     public String myPageForm(Model model, HttpServletRequest request) {
 
         Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        List<TeamMember> teamMemberList = teamMemberRepository.findByMemberName(loginMember.getName());
+
         model.addAttribute("loginMember", loginMember);
+        model.addAttribute("teamMemberList", teamMemberList);
 
         return "member/myPage";
     }
