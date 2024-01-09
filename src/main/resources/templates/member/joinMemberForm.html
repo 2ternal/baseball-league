@@ -26,7 +26,11 @@
         <div>
             <label for="name">이름</label>
             <input type="text" id="name" th:field="*{name}"
-                   class="form-control" placeholder="이름을 입력하세요">
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="이름을 입력하세요">
+            <div class="field-error" th:errors="*{name}">
+                사용자 이름 오류
+            </div>
         </div>
         <div>
             <label for="loginId">로그인 ID</label>
@@ -36,10 +40,6 @@
             <div class="field-error" th:errors="*{loginId}">
                 로그인 ID 오류
             </div>
-            <div th:if="${#fields.hasGlobalErrors()}">
-                <p class="field-error" th:each="err : ${#fields.globalErrors()}"
-                   th:text="${err}">로그인 ID 중복 오류</p>
-            </div>
         </div>
         <div>
             <label for="password">비밀번호</label>
@@ -48,6 +48,15 @@
                    placeholder="비밀번호 입력하세요">
             <div class="field-error" th:errors="*{password}">
                 비밀번호 오류
+            </div>
+        </div>
+        <div>
+            <label for="passwordCheck">비밀번호 확인</label>
+            <input type="text" id="passwordCheck" th:field="*{passwordCheck}"
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="비밀번호 한 번 더 입력하세요">
+            <div class="field-error" th:errors="*{passwordCheck}">
+                비밀번호 확인 오류
             </div>
         </div>
         <div>
@@ -63,7 +72,7 @@
             <label for="birthdayMM">생일 월</label>
             <input type="number" id="birthdayMM" th:field="*{birthdayMM}"
                    class="form-control" th:errorclass="field-error"
-                   placeholder="연도를 입력하세요">
+                   placeholder="월을 입력하세요">
             <div class="field-error" th:errors="*{birthdayMM}">
                 생년월일 오류
             </div>
@@ -72,7 +81,7 @@
             <label for="birthdayDD">생일 일</label>
             <input type="number" id="birthdayDD" th:field="*{birthdayDD}"
                    class="form-control" th:errorclass="field-error"
-                   placeholder="연도를 입력하세요">
+                   placeholder="일을 입력하세요">
             <div class="field-error" th:errors="*{birthdayDD}">
                 생년월일 오류
             </div>

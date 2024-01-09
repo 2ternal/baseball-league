@@ -15,6 +15,8 @@ public class JoinMemberForm {
     @NotEmpty
     private String password;
     @NotEmpty
+    private String passwordCheck;
+    @NotEmpty
     private String name;
 
     @NotNull

@@ -41,6 +41,15 @@ public class MemberRepository {
     }
 
     /**
+     * 로그인 아이디로 member 찾기
+     */
+    public Optional<Member> findByName(String name) {
+        return findAll().stream()
+                .filter(m -> m.getName().equals(name))
+                .findFirst();
+    }
+
+    /**
      * 모든 member 찾기
      */
     public List<Member> findAll() {

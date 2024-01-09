@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Controller
@@ -58,18 +59,29 @@ public class MemberController {
         // ID 중복 검증
         if (!ObjectUtils.isEmpty(memberRepository.findByLoginId(joinMemberForm.getLoginId()))) {
             log.info("  duplicateId={}", joinMemberForm.getLoginId());
-            bindingResult.reject("duplicateId", "중복되는 ID 입니다");
-            log.info("bindingResult={}", bindingResult);
+            bindingResult.rejectValue("loginId", "duplicateId", "중복되는 ID 입니다");
+        }
+
+        // 이름 중복 검증
+        if (!ObjectUtils.isEmpty(memberRepository.findByName(joinMemberForm.getName()))) {
+            log.info("  duplicateName={}", joinMemberForm.getName());
+            bindingResult.rejectValue("name", "duplicateName", "중복되는 회원 이름 입니다");
+        }
+
+        // 비밀번호 일치 검증
+        if (!Objects.equals(joinMemberForm.getPassword(), joinMemberForm.getPasswordCheck())) {
+            log.info("  mismatchPassword={}", joinMemberForm.getPassword());
+            bindingResult.rejectValue("passwordCheck", "mismatchPassword", "비밀번호가 일치하지 않습니다");
         }
 
         if (bindingResult.hasErrors()) {
-            log.info("bindingResult={}", bindingResult);
+            log.info("[joinMember] bindingResult={}", bindingResult);
             return "member/joinMemberForm";
         }
 
         Member member = new Member();
         member.JoinMemberFormToMember(joinMemberForm);
-        log.info("joinMember={}", member);
+        log.info("[joinMember] joinMember={}", member);
 
         memberRepository.save(member);
         return "redirect:members";
