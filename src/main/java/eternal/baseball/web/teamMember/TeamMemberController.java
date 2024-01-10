@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -91,6 +92,15 @@ public class TeamMemberController {
         if (joinCheck) {
             log.info("[joinTeamV2] 이미 팀에 가입된 선수");
             return "redirect:/team/" + teamId;
+        }
+
+        Optional<TeamMember> sameBackNumber = teamMemberRepository.findByTeamId(teamId).stream()
+                .filter(tm -> tm.getBackNumber().equals(joinTeamMemberDto.getBackNumber()))
+                .findFirst();
+
+        if (sameBackNumber.isPresent()) {
+            bindingResult.rejectValue("backNumber", "sameBackNumber", "이미 사용중인 번호입니다");
+            return "teamMember/joinTeamMemberFormV2";
         }
 
         /**

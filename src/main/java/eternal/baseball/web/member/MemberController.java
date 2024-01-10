@@ -87,6 +87,7 @@ public class MemberController {
         log.info("[joinMember] joinMember={}", member);
 
         memberRepository.save(member);
+
         return "redirect:members";
     }
 
@@ -126,6 +127,7 @@ public class MemberController {
     @GetMapping("/editMember")
     public String editMemberForm(@ModelAttribute("loginMember") EditMemberForm loginMember,
                                  HttpServletRequest request) {
+
         if (loginMember.getName() == null) {
             Member member = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
             loginMember.setMemberId(member.getMemberId());
@@ -135,6 +137,7 @@ public class MemberController {
             loginMember.setMonth(member.getBirthday().getMonth());
             loginMember.setDay(member.getBirthday().getDay());
         }
+
         return "member/editMemberForm";
     }
 
@@ -154,12 +157,12 @@ public class MemberController {
         Member sessionMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
 
         if (!sessionMember.getPassword().equals(loginMember.getPassword())) {
-            bindingResult.reject("wrongPassword", "비밀번호가 틀립니다");
+            bindingResult.rejectValue("password", "wrongPassword", "비밀번호가 틀립니다");
             return "member/editMemberForm";
         }
 
         if (!loginMember.getChangePassword().equals(loginMember.getChangePasswordCheck())) {
-            bindingResult.reject("wrongChangePassword", "변경할 비밀번호가 일치하지 않습니다");
+            bindingResult.rejectValue("changePasswordCheck", "wrongChangePassword", "변경할 비밀번호가 일치하지 않습니다");
             return "member/editMemberForm";
         }
 

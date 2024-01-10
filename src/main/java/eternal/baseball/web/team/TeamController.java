@@ -50,14 +50,14 @@ public class TeamController {
         // 팀명 중복 검증
         if (!ObjectUtils.isEmpty(teamRepository.findByTeamName(createTeamForm.getTeamName()))) {
             log.info("[createTeam] duplicateTeamName={}", createTeamForm.getTeamName());
-            bindingResult.reject("duplicateTeamName", "중복되는 팀명 입니다");
+            bindingResult.rejectValue("teamName", "duplicateTeamName", "중복되는 팀명 입니다");
             log.info("[createTeam] bindingResult={}", bindingResult);
         }
 
         // 팀 코드 중복 검증
         if (!ObjectUtils.isEmpty(teamRepository.findByTeamCode(createTeamForm.getTeamCode()))) {
             log.info("[createTeam] duplicateTeamCode={}", createTeamForm.getTeamCode());
-            bindingResult.reject("duplicateTeamCode", "중복되는 팀 코드 입니다");
+            bindingResult.rejectValue("teamCode", "duplicateTeamCode", "중복되는 팀 코드 입니다");
             log.info("[createTeam] bindingResult={}", bindingResult);
         }
 

@@ -50,6 +50,7 @@
         <div>
             <label for="backNumber" th:text="#{label.teamMember.backNumber}">backNumber</label>
             <input type="backNumber" id="backNumber" name="backNumber" class="form-control" value="100"
+                   th:errorclass="field-error"
                    th:value="${joinTeamMemberDto.backNumber}">
             <div class="field-error" th:errors="*{backNumber}">
                 backNumber 오류

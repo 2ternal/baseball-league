@@ -26,7 +26,11 @@
         <div>
             <label for="teamName">팀명</label>
             <input type="text" id="teamName" th:field="*{teamName}"
-                   class="form-control" placeholder="팀 이름을 입력하세요">
+                   class="form-control" th:errorclass="field-error"
+                   placeholder="팀 이름을 입력하세요">
+            <div class="field-error" th:errors="*{teamName}">
+                팀 코드 필드 오류
+            </div>
         </div>
         <div>
             <label for="teamCode">팀 코드</label>
@@ -37,10 +41,7 @@
                 팀 코드 필드 오류
             </div>
         </div>
-        <div th:if="${#fields.hasGlobalErrors()}">
-            <p class="field-error" th:each="err : ${#fields.globalErrors()}"
-               th:text="${err}">중복 오류</p>
-        </div>
+
         <hr class="my-4">
 
         <div class="row">
