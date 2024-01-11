@@ -8,6 +8,10 @@
         .container {
             max-width: 560px;
         }
+        .field-error {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -18,23 +22,16 @@
         <h2 th:text="#{page.teamMember}">팀원 정보</h2>
     </div>
 
-    <!-- 추가 -->
-    <h2 th:if="${param.status}" th:text="'저장 완료'"></h2>
-    <form action="" th:action th:object="${joinTeamMemberForm}" method="post">
-        <div>
-            <label for="name" th:text="#{label.member.name}">name</label>
-            <input type="text" id="name" name="name" class="form-control" value="회원"
-                   th:value="${member.name}" readonly>
-        </div>
-        <div>
-            <label for="birthday" th:text="#{label.member.birthday}">birthday</label>
-            <input type="text" id="birthday" name="birthday" class="form-control" value="20010101"
-                   th:value="${member.birthday}" readonly>
-        </div>
+    <form action="" th:action th:object="${joinTeamMemberDto}" method="post">
         <div>
             <label for="teamName" th:text="#{label.teamMember.team}">teamName</label>
             <input type="text" id="teamName" name="teamName" class="form-control" value="aaa"
-                   th:value="${team.teamName}" readonly>
+                   th:value="${joinTeamMemberDto.teamName}" readonly>
+        </div>
+        <div>
+            <label for="memberName" th:text="#{label.member.name}">name</label>
+            <input type="text" id="memberName" name="memberName" class="form-control" value="회원"
+                   th:value="${joinTeamMemberDto.memberName}" readonly>
         </div>
         <div>
             <div th:text="#{label.teamMember.mainPosition}">mainPosition</div>
@@ -42,7 +39,8 @@
                 <option value="" selected>==포지션 선택==</option>
                 <option th:each="position : ${positions}"
                         th:value="${position}"
-                        th:text="${position.description}">position</option>
+                        th:text="${position.description}">position
+                </option>
             </select>
             <div class="field-error" th:errors="*{mainPosition}">
                 mainPosition 오류
@@ -50,8 +48,9 @@
         </div>
         <div>
             <label for="backNumber" th:text="#{label.teamMember.backNumber}">backNumber</label>
-            <input type="backNumber" id="backNumber" name="backNumber" class="form-control" value="1"
-                   th:value="${joinTeamMemberForm.backNumber}">
+            <input type="backNumber" id="backNumber" name="backNumber" class="form-control" value="100"
+                   th:errorclass="field-error"
+                   th:value="${joinTeamMemberDto.backNumber}">
             <div class="field-error" th:errors="*{backNumber}">
                 backNumber 오류
             </div>
@@ -65,13 +64,15 @@
             </div>
             <div class="col">
                 <button class="w-100 btn btn-secondary btn-lg"
-                        onclick="location.href='members.html'"
-                        th:onclick="|location.href='@{/member/members}'|"
-                        type="button" th:text="#{button.list}">목록으로
+                        onclick="location.href='teams.html'"
+                        th:onclick="|location.href='@{/team/{teamId}(teamId=${teamMember.team.teamId})}'|"
+                        type="button" th:text="#{button.list}">
+                    목록으로
                 </button>
             </div>
         </div>
     </form>
+
 </div> <!-- /container -->
 </body>
 </html>

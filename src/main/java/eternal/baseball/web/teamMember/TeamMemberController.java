@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -32,7 +34,7 @@ public class TeamMemberController {
     private final TeamMemberRepository teamMemberRepository;
 
     /**
-     * 팀원 페이지
+     * 팀원 상세 페이지
      */
     @GetMapping("{teamMemberId}")
     public String teamMember(@PathVariable Long teamMemberId, Model model) {
@@ -65,7 +67,7 @@ public class TeamMemberController {
         JoinTeamMemberDto joinTeamMemberDto = new JoinTeamMemberDto(loginMember, joinTeam);
         model.addAttribute("joinTeamMemberDto", joinTeamMemberDto);
 
-        return "teamMember/joinTeamMemberFormV2";
+        return "teamMember/joinTeamMemberForm";
     }
 
     /**
@@ -79,7 +81,7 @@ public class TeamMemberController {
 
         if (bindingResult.hasErrors()) {
             log.info("bindingResult={}", bindingResult);
-            return "teamMember/joinTeamMemberFormV2";
+            return "teamMember/joinTeamMemberForm";
         }
 
         log.info("[joinTeamV2] joinTeamMemberDto={}", joinTeamMemberDto);
@@ -100,15 +102,10 @@ public class TeamMemberController {
 
         if (sameBackNumber.isPresent()) {
             bindingResult.rejectValue("backNumber", "sameBackNumber", "이미 사용중인 번호입니다");
-            return "teamMember/joinTeamMemberFormV2";
+            return "teamMember/joinTeamMemberForm";
         }
 
-        /**
-         * Dto --> Entity
-         * joinTeamMemberDto의 toTeamMember()에서 teamMember의 생성자를 불러 teamMember를 만든다
-         * 괜찮은 방법인가?
-         */
-        TeamMember teamMember = joinTeamMemberDto.toTeamMember(loginMember, joinTeam);
+        TeamMember teamMember = new TeamMember(loginMember, joinTeam, joinTeamMemberDto);
         teamMemberRepository.save(teamMember);
         log.info("[joinTeamV2] teamMember={}", teamMember);
 
@@ -117,45 +114,112 @@ public class TeamMemberController {
         return "redirect:/teamMember/" + teamMemberId;
     }
 
+    /**
+     * 관리자의 팀원 수정 페이지
+     */
+    @GetMapping("{teamMemberId}/manage")
+    public String manageTeamMemberForm(@PathVariable Long teamMemberId,
+                                       Model model,
+                                       HttpServletRequest request) {
+
+        TeamMember teamMember = teamMemberRepository.findByTeamMemberId(teamMemberId);
+        Member loginMember = getLoginMember(request);
+
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
+
+        Integer loginTeamMemberGrade = loginTeamMember.getMemberShip().getGrade();
+
+        if (loginTeamMemberGrade > teamMember.getMemberShip().getGrade()) {
+            String redirectURI = "/team/" + teamMember.getTeam().getTeamId();
+            AlertMessage message = new AlertMessage("수정하려는 대상의 권한이 더 높습니다", redirectURI);
+            model.addAttribute("message", message);
+            log.info("[manageTeamMemberForm] AlertMessage redirectURI={}", redirectURI);
+            return "template/alert";
+        }
+
+        List<TeamMemberShip> teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
+        EditTeamMemberDto editTeamMemberDto = new EditTeamMemberDto(teamMember);
+
+        log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
+
+        model.addAttribute("teamMember", teamMember);
+        model.addAttribute("teamMemberShips", teamMemberShips);
+        model.addAttribute("editTeamMemberDto", editTeamMemberDto);
+
+        return "teamMember/editTeamMemberForm";
+    }
+
+    /**
+     * 관리자의 팀원 수정
+     */
+    @PostMapping("{teamMemberId}/manage")
+    public String manageTeamMember(@PathVariable Long teamMemberId,
+                                   @Validated @ModelAttribute("editTeamMemberDto") EditTeamMemberDto editTeamMemberDto,
+                                   BindingResult bindingResult,
+                                   HttpServletRequest request,
+                                   Model model) {
+
+        TeamMember teamMember = teamMemberRepository.findByTeamMemberId(teamMemberId);
+        Member loginMember = getLoginMember(request);
+
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
+
+        if (bindingResult.hasErrors()) {
+            Integer loginMemberGrade = loginTeamMember.getMemberShip().getGrade();
+            List<TeamMemberShip> teamMemberShips = getTeamMemberShips(loginMemberGrade);
+
+            model.addAttribute("teamMember", teamMember);
+            model.addAttribute("teamMemberShips", teamMemberShips);
+            log.info("[manageTeamMember] has field error");
+            return "teamMember/editTeamMemberForm";
+        }
+
+        TeamMemberShip editTeamMemberShip = TeamMemberShip.fromDescription(editTeamMemberDto.getTeamMemberShip());
+
+        //수정하려는 등급이 감독 이상일 때
+        //기존 감독이나 오너의 등급을 선수로 내린다
+        if (teamMember.getMemberShip() != editTeamMemberShip && editTeamMemberShip.getGrade() <= TeamMemberShip.MANAGER.getGrade()) {
+            TeamMember highTeamMember = teamMemberRepository.findByTeamId(teamMember.getTeam().getTeamId()).stream()
+                    .filter(tm -> tm.getMemberShip().equals(editTeamMemberShip))
+                    .findFirst()
+                    .orElse(null);
+
+            if (highTeamMember != null) {
+                if (editTeamMemberShip.getGrade().equals(TeamMemberShip.OWNER.getGrade())) {
+                    Team team = teamMember.getTeam();
+                    team.setOwner(teamMember.getMember());
+                    teamRepository.edit(teamMember.getTeam().getTeamId(), team);
+                    log.info("[manageTeamMember] change Owner={}", team.getOwner());
+                }
+
+                highTeamMember.setMemberShip(TeamMemberShip.PLAYER);
+                teamMemberRepository.edit(highTeamMember.getTeamMemberId(), highTeamMember);
+                log.info("[manageTeamMember] change teamMemberShip={}", highTeamMember.getMember().getName());
+            }
+        }
+
+        TeamMember editTeamMember = new TeamMember(teamMember, editTeamMemberDto);
+        teamMemberRepository.edit(teamMemberId, editTeamMember);
+        log.info("[manageTeamMember] edit teamMember={}", editTeamMember);
+
+        return "redirect:/teamMember/" + teamMemberId;
+    }
+
+    private static List<TeamMemberShip> getTeamMemberShips(Integer loginMemberGrade) {
+        List<TeamMemberShip> teamMemberShips = new ArrayList<>();
+        for (int i = 4; i >= loginMemberGrade; i--) {
+            teamMemberShips.add(TeamMemberShip.fromGrade(i));
+        }
+        return teamMemberShips;
+    }
+
     private static Member getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession();
         return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
-    //    @GetMapping("/joinTeam/{teamId}")
-    public String joinTeamForm(@PathVariable Long teamId, Model model, HttpServletRequest request) {
-        Member loginMember = getLoginMember(request);
-        Team joinTeam = teamRepository.findByTeamId(teamId);
-        Position[] positions = Position.values();
-
-        model.addAttribute("member", loginMember);
-        model.addAttribute("team", joinTeam);
-        model.addAttribute("joinTeamMemberForm", new JoinTeamMemberForm());
-        model.addAttribute("positions", positions);
-
-        return "teamMember/joinTeamMemberForm";
-    }
-
-    //    @PostMapping("/joinTeam/{teamId}")
-    public String joinTeam(@PathVariable Long teamId,
-                           @Validated @ModelAttribute("joinTeamMemberForm") JoinTeamMemberForm joinTeamMemberForm,
-                           BindingResult bindingResult,
-                           HttpServletRequest request) {
-
-        if (bindingResult.hasErrors()) {
-            log.info("bindingResult={}", bindingResult);
-            return "teamMember/joinTeamMemberForm";
-        }
-
-        Member loginMember = getLoginMember(request);
-        Team joinTeam = teamRepository.findByTeamId(teamId);
-
-        TeamMember teamMember = new TeamMember(loginMember, joinTeam, TeamMemberShip.PLAYER, joinTeamMemberForm);
-        teamMemberRepository.save(teamMember);
-        log.info("[joinTeam] joinTeamMember={}", teamMember);
-
-        Long teamMemberId = teamMember.getTeamMemberId();
-
-        return "redirect:/teamMember/" + teamMemberId;
+    @ModelAttribute("positions")
+    public List<Position> positions() {
+        return List.of(Position.values());
     }
 }

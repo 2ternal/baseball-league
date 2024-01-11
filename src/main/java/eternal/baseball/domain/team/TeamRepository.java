@@ -1,5 +1,6 @@
 package eternal.baseball.domain.team;
 
+import eternal.baseball.domain.member.Member;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -16,6 +17,14 @@ public class TeamRepository {
     public Team save(Team team) {
         team.setTeamId(++sequence);
         teamStore.put(team.getTeamId(), team);
+        return team;
+    }
+
+    /**
+     * 팀 정보 수정
+     */
+    public Team edit(Long teamId, Team team) {
+        teamStore.put(teamId, team);
         return team;
     }
 

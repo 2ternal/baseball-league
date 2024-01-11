@@ -45,7 +45,7 @@
     <div>
         <label for="memberShip" th:text="#{label.teamMember.memberShip}">memberShip</label>
         <input type="text" id="memberShip" name="memberShip" class="form-control" value="player"
-               th:value="${teamMember.memberShip}" readonly>
+               th:value="${teamMember.memberShip.description}" readonly>
     </div>
     <div>
         <label for="mainPosition" th:text="#{label.teamMember.mainPosition}">mainPosition</label>
@@ -64,7 +64,7 @@
         <div class="col">
             <button class="w-100 btn btn-secondary btn-lg"
                     onclick="location.href='members.html'"
-                    th:onclick="|location.href='@{/team/teams}'|"
+                    th:onclick="|location.href='@{/team/{teamId}(teamId=${teamMember.team.teamId})}'|"
                     type="button" th:text="#{button.list}">목록으로
             </button>
         </div>

@@ -19,6 +19,9 @@ public class MemberRepository {
         return member;
     }
 
+    /**
+     * 멤버 정보 수정
+     */
     public Member edit(Long memberId, Member member) {
         memberStore.put(memberId, member);
         return member;

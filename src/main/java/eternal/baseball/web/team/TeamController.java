@@ -29,6 +29,9 @@ public class TeamController {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
 
+    /**
+     * 팀 목록 페이지
+     */
     @GetMapping("/teams")
     public String teams(Model model) {
         List<Team> teams = teamRepository.findAll();
@@ -36,12 +39,18 @@ public class TeamController {
         return "team/teams";
     }
 
+    /**
+     * 팀 창단 페이지
+     */
     @GetMapping("/createTeam")
     public String createTeamForm(Model model) {
         model.addAttribute("createTeamForm", new CreateTeamForm());
         return "team/createTeamForm";
     }
 
+    /**
+     * 팀 창단
+     */
     @PostMapping("/createTeam")
     public String createTeam(@Validated @ModelAttribute("createTeamForm") CreateTeamForm createTeamForm,
                              BindingResult bindingResult,
@@ -66,8 +75,7 @@ public class TeamController {
             return "team/createTeamForm";
         }
 
-        HttpSession session = request.getSession();
-        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Member loginMember = getLoginMember(request);
         log.info("[createTeam] loginMember={}", loginMember);
 
         //검증 후 팀 창단
@@ -88,14 +96,34 @@ public class TeamController {
         return "redirect:/team/teams";
     }
 
+    /**
+     * 팀 상세 페이지
+     */
     @GetMapping("/{teamId}")
-    public String team(@PathVariable Long teamId, Model model) {
-        Team team = teamRepository.findByTeamId(teamId);
+    public String team(@PathVariable Long teamId, Model model, HttpServletRequest request) {
 
+        Team team = teamRepository.findByTeamId(teamId);
         List<TeamMember> teamMembers = teamMemberRepository.findByTeamName(team.getTeamName());
+
+        Member loginMember = getLoginMember(request);
+        log.info("[team] loginMember={}", loginMember);
+
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+
+        log.info("[team] loginTeamMember={}", loginTeamMember);
+        if (loginTeamMember != null && loginTeamMember.getMemberShip().getGrade() < TeamMemberShip.COACH.getGrade()) {
+            model.addAttribute("manage", true);
+            log.info("[team] can manage!!");
+        }
+
         model.addAttribute("team", team);
         model.addAttribute("teamMembers", teamMembers);
 
         return "team/team";
+    }
+
+    private static Member getLoginMember(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 }

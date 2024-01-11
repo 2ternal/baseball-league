@@ -23,17 +23,11 @@ public class JoinTeamMemberDto {
     @NotNull
     private Long backNumber;
 
-    public Position[] positions = Position.values();
-
     public JoinTeamMemberDto() {
     }
 
     public JoinTeamMemberDto(Member member, Team team) {
         this.teamName = team.getTeamName();
         this.memberName = member.getName();
-    }
-
-    public TeamMember toTeamMember(Member member, Team team) {
-        return new TeamMember(member, team, this);
     }
 }
