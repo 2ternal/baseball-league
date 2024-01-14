@@ -70,6 +70,7 @@ public class LineupController {
                                   HttpServletRequest request,
                                   Model model) {
 
+
         log.info("[writeLineupForm] init lineupForm={}", lineupForm);
         log.info("[writeLineupForm] init errCode={}", errCode);
         log.info("[writeLineupForm] init errCode isEmpty={}", errCode.isEmpty());
@@ -81,6 +82,16 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
         //
+        Member loginMember = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+
+        if (loginTeamMember.getMemberShip().getGrade() > 3) {
+            String redirectURI = request.getHeader("REFERER");
+            AlertMessage message = new AlertMessage("라인업은 코치등급부터 작성할 수 있습니다", redirectURI);
+            model.addAttribute("message", message);
+            return "template/alert";
+        }
+
         if (lineupForm.getStartingPlayers() == null) {
             ArrayList<TeamMember> teamMembers = (ArrayList<TeamMember>) teamMemberRepository.findByTeamId(teamId);
             if (teamMembers.size() < 9) {
@@ -366,6 +377,11 @@ public class LineupController {
         lineupNumber.add("nine");
         lineupNumber.add("bench");
         return lineupNumber;
+    }
+
+    private static Member getLoginMember(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
     public ArrayList<Player> getStarting(LineupFormDto lineupFormDto) {
