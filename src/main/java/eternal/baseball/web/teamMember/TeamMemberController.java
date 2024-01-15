@@ -129,7 +129,9 @@ public class TeamMemberController {
 
         Integer loginTeamMemberGrade = loginTeamMember.getMemberShip().getGrade();
 
-        if (loginTeamMemberGrade > teamMember.getMemberShip().getGrade()) {
+        log.info("[manageTeamMemberForm] teamMember != loginTeamMember ={}", teamMember != loginTeamMember);
+
+        if (teamMember != loginTeamMember && loginTeamMemberGrade > teamMember.getMemberShip().getGrade()) {
             String redirectURI = "/team/" + teamMember.getTeam().getTeamId();
             AlertMessage message = new AlertMessage("수정하려는 대상의 권한이 더 높습니다", redirectURI);
             model.addAttribute("message", message);
@@ -137,7 +139,14 @@ public class TeamMemberController {
             return "template/alert";
         }
 
-        List<TeamMemberShip> teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
+        List<TeamMemberShip> teamMemberShips = new ArrayList<>();
+
+        if (teamMember.getMemberShip().getGrade() == 1) {
+            teamMemberShips.add(TeamMemberShip.OWNER);
+        } else {
+            teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
+        }
+
         EditTeamMemberDto editTeamMemberDto = new EditTeamMemberDto(teamMember);
 
         log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
