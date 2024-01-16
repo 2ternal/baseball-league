@@ -65,6 +65,19 @@
         </table>
     </div>
 
+    <div class="row">
+        <div class="col">
+            <form action="" method="post" th:action="@{/lineup/{teamId}/{lineupId}/delete(teamId=${teamId}, lineupId=${lineup.lineupId})}">
+                <button href="lineup.html"
+                        class="w-100 btn btn-secondary btn-lg"
+                        onclick="if(!confirm('삭제 하시겠습니까?')){return false;}"
+                        th:text="#{button.delete}"
+                        type="submit">삭제
+                </button>
+            </form>
+        </div>
+    </div>
+
     <hr class="my-4">
 
     <div class="row">

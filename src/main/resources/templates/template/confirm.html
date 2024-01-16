@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <th:block th:if="${#strings.length(message.question) != 0}">
+        <script>
+            var result = confirm("[[${message.question}]]");
+
+            if (result == true) {
+                alert("[[${message.alertMessage}]]")
+                location.href = '[[${message.redirectURI}]]';
+            } else {
+                location.href = '[[${message.refererURI}]]';
+            }
+        </script>
+    </th:block>
+</head>
+</html>

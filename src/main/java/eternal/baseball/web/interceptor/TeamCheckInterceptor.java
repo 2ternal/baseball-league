@@ -11,6 +11,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 @Slf4j
 @Component
@@ -29,7 +31,14 @@ public class TeamCheckInterceptor implements HandlerInterceptor {
         log.info("[TeamCheckInterceptor] 이전 url={}", referer);
 
         Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
-        Long teamId = Long.parseLong(requestURI.substring(8, requestURI.lastIndexOf("/")));
+        int i = requestURI.indexOf("lineup/") + "lineup/".length();
+        String substring = requestURI.substring(i);
+
+        int j = substring.indexOf("/");
+        String stringTeamId = substring.substring(0, j);
+        log.info("[TeamCheckInterceptor] stringTeamId={}", stringTeamId);
+
+        Long teamId = Long.parseLong(stringTeamId);
 
         log.info("[TeamCheckInterceptor] 팀 Id={}", teamId);
 

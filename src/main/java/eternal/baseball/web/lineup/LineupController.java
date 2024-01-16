@@ -2,6 +2,7 @@ package eternal.baseball.web.lineup;
 
 import eternal.baseball.domain.custom.Player;
 import eternal.baseball.domain.custom.Position;
+import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.lineup.Lineup;
 import eternal.baseball.domain.lineup.LineupRepository;
 import eternal.baseball.domain.member.Member;
@@ -360,6 +361,29 @@ public class LineupController {
         lineupRepository.save(lineup);
         log.info("[writeLineup] lineup={}", lineup);
 
+        return "redirect:/lineup/" + teamId + "/list";
+    }
+
+    @PostMapping("/{teamId}/{lineupId}/delete")
+    public String deleteLineup(@PathVariable Long teamId,
+                               @PathVariable Long lineupId,
+                               HttpServletRequest request,
+                               Model model) {
+
+        Member loginMember = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+        Lineup lineup = lineupRepository.findByLineupId(lineupId);
+
+        if (!loginTeamMember.getMemberShip().equals(TeamMemberShip.OWNER) && loginTeamMember != lineup.getWriter()) {
+            log.info("[deleteLineup] loginTeamMember != lineup.getWriter()");
+            String redirectURI = request.getHeader("REFERER");
+            AlertMessage message = new AlertMessage("이 라인업을 삭제할 권한이 없습니다", redirectURI);
+            model.addAttribute("message", message);
+            return "template/alert";
+        }
+
+        log.info("[deleteLineup] deleteLineup!!");
+        lineupRepository.deleteLineup(lineupId);
         return "redirect:/lineup/" + teamId + "/list";
     }
 

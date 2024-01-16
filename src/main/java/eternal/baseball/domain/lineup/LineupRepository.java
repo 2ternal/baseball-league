@@ -39,6 +39,13 @@ public class LineupRepository {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 라인업 아이디로 라인업 삭제
+     */
+    public Lineup deleteLineup(Long lineupId) {
+        return lineupRepository.remove(lineupId);
+    }
+
     public List<Lineup> findAll() {
         return new ArrayList<>(lineupRepository.values());
     }
