@@ -42,7 +42,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="starting : ${lineup.lineupCard}">
+            <tr th:each="starting : ${lineup.starting}">
                 <td th:text="${starting.orderNum}">타순</td>
                 <td><a th:text="${starting.teamMember.member.name}"
                        th:href="@{/teamMember/{teamMemberId}(teamMemberId=${starting.teamMember.teamMemberId})}">선수</a>
@@ -67,12 +67,21 @@
 
     <div class="row">
         <div class="col">
+            <button class="w-100 btn btn-primary btn-lg"
+                    onclick="location.href='editTeamForm.html'"
+                    th:onclick="|location.href='@{/lineup/{teamId}/{lineupId}/edit(teamId=${teamId}, lineupId=${lineup.lineupId})}'|"
+                    type="button" th:text="#{button.edit}">
+                수정
+            </button>
+        </div>
+        <div class="col">
             <form action="" method="post" th:action="@{/lineup/{teamId}/{lineupId}/delete(teamId=${teamId}, lineupId=${lineup.lineupId})}">
                 <button href="lineup.html"
-                        class="w-100 btn btn-secondary btn-lg"
+                        class="w-100 btn btn-danger btn-lg"
                         onclick="if(!confirm('삭제 하시겠습니까?')){return false;}"
                         th:text="#{button.delete}"
-                        type="submit">삭제
+                        type="submit">
+                    삭제
                 </button>
             </form>
         </div>

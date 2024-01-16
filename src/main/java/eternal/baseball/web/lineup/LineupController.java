@@ -132,6 +132,9 @@ public class LineupController {
                               RedirectAttributes redirectAttributes,
                               HttpServletRequest request) {
 
+        String redirectURI = request.getHeader("REFERER");
+        log.info("[changeOrder] REFERER redirectURI={}", redirectURI);
+
         log.info("[changeOrder] lineupChangeCard={}", lineupChangeCard);
         if (bindingResult.hasErrors()) {
             return "lineup/writeLineupForm";
@@ -141,10 +144,10 @@ public class LineupController {
         List<Boolean> trueList = lineupChangeCard.isTrueList();
         lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
-        ArrayList<PlayerForm> startingPlayers = lineupForm.getStartingPlayers();
-        ArrayList<PlayerForm> benchPlayers = lineupForm.getBenchPlayers();
+        ArrayList<PlayerDto> startingPlayers = lineupForm.getStartingPlayers();
+        ArrayList<PlayerDto> benchPlayers = lineupForm.getBenchPlayers();
 
-        PlayerForm player1 = null;
+        PlayerDto player1 = null;
         int player1OrderIndex = 0;
         for (Boolean tf : trueList) {
             if (tf) {
@@ -162,10 +165,11 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("errCode", "needStarting");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다");
 
-            return "redirect:/lineup/" + teamId + "/create";
+//            return "redirect:/lineup/" + teamId + "/create";
+            return "redirect:" + redirectURI;
         }
 
-        PlayerForm player2 = null;
+        PlayerDto player2 = null;
         int player2OrderIndex = 0;
         for (int i = player1OrderIndex + 1; i < 9; i++) {
             if (trueList.get(i)) {
@@ -183,7 +187,8 @@ public class LineupController {
                 redirectAttributes.addFlashAttribute("errCode", "needTwoPlayers");
                 redirectAttributes.addFlashAttribute("errMessage", "2명의 선수를 선택해야 합니다");
 
-                return "redirect:/lineup/" + teamId + "/create";
+//                return "redirect:/lineup/" + teamId + "/create";
+                return "redirect:" + redirectURI;
             }
             player2OrderIndex = lineupChangeCard.getBench() - 1;
             player2 = benchPlayers.get(player2OrderIndex - 9);
@@ -223,7 +228,8 @@ public class LineupController {
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
         redirectAttributes.addAttribute("status", true);
 
-        return "redirect:/lineup/" + teamId + "/create";
+//        return "redirect:/lineup/" + teamId + "/create";
+        return "redirect:" + redirectURI;
     }
 
     /**
@@ -236,6 +242,9 @@ public class LineupController {
                                  RedirectAttributes redirectAttributes,
                                  HttpServletRequest request) {
 
+        String redirectURI = request.getHeader("REFERER");
+        log.info("[changePosition] REFERER redirectURI={}", redirectURI);
+
         if (bindingResult.hasErrors()) {
             return "lineup/writeLineupForm";
         }
@@ -245,9 +254,9 @@ public class LineupController {
         log.info("[changePosition] lineupForm={}", lineupForm);
         lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
-        ArrayList<PlayerForm> startingPlayers = lineupForm.getStartingPlayers();
+        ArrayList<PlayerDto> startingPlayers = lineupForm.getStartingPlayers();
 
-        PlayerForm player1 = null;
+        PlayerDto player1 = null;
         int player1OrderIndex = 0;
         for (Boolean tf : trueList) {
             if (tf) {
@@ -265,10 +274,11 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("errCode", "needStarting");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다");
 
-            return "redirect:/lineup/" + teamId + "/create";
+//            return "redirect:/lineup/" + teamId + "/create";
+            return "redirect:" + redirectURI;
         }
 
-        PlayerForm player2 = null;
+        PlayerDto player2 = null;
         int player2OrderIndex = 0;
         for (int i = player1OrderIndex + 1; i < 9; i++) {
             if (trueList.get(i)) {
@@ -286,7 +296,8 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("errCode", "needTwoStartingPlayers");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 2명의 선수를 선택해야 합니다");
 
-            return "redirect:/lineup/" + teamId + "/create";
+//            return "redirect:/lineup/" + teamId + "/create";
+            return "redirect:" + redirectURI;
         }
 
         log.info("[changePosition] player1={}", player1);
@@ -311,7 +322,8 @@ public class LineupController {
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
         redirectAttributes.addAttribute("status", true);
 
-        return "redirect:/lineup/" + teamId + "/create";
+//        return "redirect:/lineup/" + teamId + "/create";
+        return "redirect:" + redirectURI;
     }
 
     /**
@@ -334,7 +346,7 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        Member loginMember = getLoginMember(request);
         log.info("[writeLineup] lineupForm={}", lineupForm);
 
         Lineup lineup = new Lineup();
@@ -344,16 +356,13 @@ public class LineupController {
         ArrayList<Player> bench = getBench(lineupForm);
         log.info("[writeLineup] convert lineupForm success!!");
 
-        TeamMember loginTeamMember = teamMemberRepository.findByTeamId(teamId).stream()
-                .filter(tm -> tm.getMember().equals(loginMember))
-                .findFirst()
-                .orElse(null);
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
 
         log.info("[writeLineup] loginTeamMember={}", loginTeamMember);
 
         lineup.setTeam(teamRepository.findByTeamId(teamId));
         lineup.setWriter(loginTeamMember);
-        lineup.setLineupCard(starting);
+        lineup.setStarting(starting);
         lineup.setBench(bench);
         lineup.setLineupName(lineupChangeCard.getLineupName());
         lineup.setUpdateTime(new Date());
@@ -364,6 +373,117 @@ public class LineupController {
         return "redirect:/lineup/" + teamId + "/list";
     }
 
+    /**
+     * 라인업 수정 폼
+     */
+    @GetMapping("/{teamId}/{lineupId}/edit")
+    public String editLineupForm(@PathVariable Long teamId,
+                                 @PathVariable Long lineupId,
+                                 @ModelAttribute("lineupForm") LineupFormDto lineupForm,
+                                 @ModelAttribute("errCode") String errCode,
+                                 @ModelAttribute("errMessage") String errMessage,
+                                 @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
+                                 BindingResult bindingResult,
+                                 HttpServletRequest request,
+                                 Model model) {
+
+        log.info("[editLineupForm] init lineupForm={}", lineupForm);
+        log.info("[editLineupForm] init errCode={}", errCode);
+        log.info("[editLineupForm] init errCode isEmpty={}", errCode.isEmpty());
+        log.info("[editLineupForm] init errMessage={}", errMessage);
+
+        if (!errCode.isEmpty()) {
+            bindingResult.reject(errCode, errMessage);
+            log.info("[editLineupForm] bindingResult={}", bindingResult);
+            return "lineup/editLineupForm";
+        }
+
+        Member loginMember = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+
+        if (loginTeamMember.getMemberShip().getGrade() > 3) {
+            String redirectURI = request.getHeader("REFERER");
+            AlertMessage message = new AlertMessage("라인업은 코치등급부터 작성할 수 있습니다", redirectURI);
+            model.addAttribute("message", message);
+            return "template/alert";
+        }
+
+        if (lineupForm.getStartingPlayers() == null) {
+            ArrayList<TeamMember> teamMembers = (ArrayList<TeamMember>) teamMemberRepository.findByTeamId(teamId);
+            if (teamMembers.size() < 9) {
+                log.info("[editLineupForm] be short of teamMember={}", teamMembers.size());
+                String redirectURI = request.getHeader("REFERER");
+                AlertMessage message = new AlertMessage("팀원이 부족합니다", redirectURI);
+                model.addAttribute("message", message);
+                return "template/alert";
+            }
+
+            Lineup lineup = lineupRepository.findByLineupId(lineupId);
+
+            lineupForm = new LineupFormDto(lineup);
+            log.info("[editLineupForm] new lineupForm={}", lineupForm);
+
+        }
+
+        lineupChangeCard = new LineupChangeCard();
+        lineupChangeCard.setLineupName(lineupForm.getLineupName());
+
+        //Post 메소드에서 redirect 로 넘어왔다면 redirectAttributes 에 담긴 lineupForm 을 쓸 수 있다
+        log.info("[editLineupForm] lineupForm={}", lineupForm);
+
+        model.addAttribute("lineupId", lineupId);
+        model.addAttribute("lineupForm", lineupForm);
+        model.addAttribute("lineupChangeCard", lineupChangeCard);
+        model.addAttribute("teamId", teamId);
+
+        //Post 메소드 실행에 쓰기 위해 session 에 담는다
+        HttpSession session = request.getSession();
+        session.setAttribute(SessionConst.LINEUP_CARD, lineupForm);
+        return "lineup/editLineupForm";
+    }
+
+    /**
+     * 라인업 수정
+     */
+    @PostMapping("/{teamId}/{lineupId}/edit")
+    public String editLineup(@PathVariable Long teamId,
+                             @PathVariable Long lineupId,
+                             @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
+                             BindingResult bindingResult,
+                             HttpServletRequest request,
+                             Model model) {
+
+        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        log.info("[editLineup] lineupForm={}", lineupForm);
+
+        Member loginMember = getLoginMember(request);
+
+        Lineup lineup = new Lineup();
+
+        ArrayList<Player> starting = getStarting(lineupForm);
+        ArrayList<Player> bench = getBench(lineupForm);
+        log.info("[editLineup] convert lineupForm success!!");
+
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+
+        lineup.setLineupId(lineupId);
+        lineup.setTeam(teamRepository.findByTeamId(teamId));
+        lineup.setWriter(loginTeamMember);
+        lineup.setStarting(starting);
+        lineup.setBench(bench);
+        lineup.setLineupName(lineupChangeCard.getLineupName());
+        lineup.setUpdateTime(new Date());
+
+        lineupRepository.edit(lineupId, lineup);
+        log.info("[editLineup] lineup={}", lineup);
+
+        return "redirect:/lineup/" + teamId + "/list";
+    }
+
+
+    /**
+     * 라인업 삭제
+     */
     @PostMapping("/{teamId}/{lineupId}/delete")
     public String deleteLineup(@PathVariable Long teamId,
                                @PathVariable Long lineupId,
@@ -410,7 +530,7 @@ public class LineupController {
 
     public ArrayList<Player> getStarting(LineupFormDto lineupFormDto) {
 
-        ArrayList<PlayerForm> startingPlayers = lineupFormDto.getStartingPlayers();
+        ArrayList<PlayerDto> startingPlayers = lineupFormDto.getStartingPlayers();
 
         ArrayList<Player> starting = (ArrayList<Player>) startingPlayers.stream()
                 .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))
@@ -423,7 +543,7 @@ public class LineupController {
 
     public ArrayList<Player> getBench(LineupFormDto lineupFormDto) {
 
-        ArrayList<PlayerForm> benchPlayers = lineupFormDto.getBenchPlayers();
+        ArrayList<PlayerDto> benchPlayers = lineupFormDto.getBenchPlayers();
 
         ArrayList<Player> bench = (ArrayList<Player>) benchPlayers.stream()
                 .map(pf -> new Player(teamMemberRepository.findByTeamMemberId(pf.getTeamMemberId()), Position.fromDescription(pf.getPosition()), pf.getOrderNum()))

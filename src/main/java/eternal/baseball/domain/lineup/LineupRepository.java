@@ -1,5 +1,6 @@
 package eternal.baseball.domain.lineup;
 
+import eternal.baseball.domain.member.Member;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -20,6 +21,14 @@ public class LineupRepository {
     public Lineup save(Lineup lineup) {
         lineup.setLineupId(++sequence);
         lineupRepository.put(lineup.getLineupId(), lineup);
+        return lineup;
+    }
+
+    /**
+     * 라인업 정보 수정
+     */
+    public Lineup edit(Long lineupId, Lineup lineup) {
+        lineupRepository.put(lineupId, lineup);
         return lineup;
     }
 
