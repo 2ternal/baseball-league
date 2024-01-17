@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -58,6 +59,11 @@ public class MemberController {
     @PostMapping("/joinMember")
     public String joinMember(@Validated @ModelAttribute("joinMemberForm") JoinMemberForm joinMemberForm,
                              BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            log.info("[joinMember] bindingResult={}", bindingResult);
+            return "member/joinMemberForm";
+        }
 
         // ID 중복 검증
         if (!ObjectUtils.isEmpty(memberRepository.findByLoginId(joinMemberForm.getLoginId()))) {
@@ -156,13 +162,31 @@ public class MemberController {
 
         Member sessionMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
 
+        // 비밀번호 확인 검증
         if (!sessionMember.getPassword().equals(loginMember.getPassword())) {
             bindingResult.rejectValue("password", "wrongPassword", "비밀번호가 틀립니다");
             return "member/editMemberForm";
         }
 
+        // 이름 중복 검증
+        List<Member> members = memberRepository.findAll().stream()
+                .filter(m -> m.getName().equals(loginMember.getName()))
+                .collect(Collectors.toList());
+        for (Member member : members) {
+            if (!Objects.equals(sessionMember.getMemberId(), member.getMemberId())) {
+                log.info("  duplicateName={}", sessionMember.getName());
+                bindingResult.rejectValue("name", "duplicateName", "중복되는 회원 이름 입니다");
+            }
+        }
+
+        // 변경 비밀번호 일치 검증
         if (!loginMember.getChangePassword().equals(loginMember.getChangePasswordCheck())) {
             bindingResult.rejectValue("changePasswordCheck", "wrongChangePassword", "변경할 비밀번호가 일치하지 않습니다");
+            return "member/editMemberForm";
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("[editMember] bindingResult={}", bindingResult);
             return "member/editMemberForm";
         }
 

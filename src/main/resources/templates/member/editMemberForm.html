@@ -44,8 +44,11 @@
         <div>
             <label for="name" th:text="#{label.member.name}">이름</label>
             <input type="text" id="name" name="name" th:field="*{name}"
-                   class="form-control"
+                   class="form-control" th:errorclass="field-error"
                    value="회원" th:value="${loginMember.name}">
+            <div class="field-error" th:errors="*{name}">
+                이름/닉네임 오류
+            </div>
         </div>
         <div>
             <label for="year">생일 년도</label>
