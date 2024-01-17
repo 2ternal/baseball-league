@@ -24,6 +24,11 @@
                th:value="${lineup.team.teamName}" readonly>
     </div>
     <div>
+        <label for="lineupName" th:text="#{label.lineup.lineupName}">팀명</label>
+        <input type="text" id="lineupName" name="lineupName" class="form-control" value="라인업1"
+               th:value="${lineup.lineupName}" readonly>
+    </div>
+    <div>
         <label for="writer" th:text="#{label.lineup.writer}">작성자</label>
         <input type="text" id="writer" name="writer" class="form-control" value="Owner"
                th:value="${lineup.writer.member.name}" readonly>

@@ -71,18 +71,18 @@ public class LineupController {
                                   HttpServletRequest request,
                                   Model model) {
 
-
         log.info("[writeLineupForm] init lineupForm={}", lineupForm);
         log.info("[writeLineupForm] init errCode={}", errCode);
         log.info("[writeLineupForm] init errCode isEmpty={}", errCode.isEmpty());
         log.info("[writeLineupForm] init errMessage={}", errMessage);
-        //
+//        log.info("[writeLineupForm] init status={}", status);
+
         if (!errCode.isEmpty()) {
             bindingResult.reject(errCode, errMessage);
             log.info("[writeLineupForm] bindingResult={}", bindingResult);
             return "lineup/writeLineupForm";
         }
-        //
+
         Member loginMember = getLoginMember(request);
         TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
 
@@ -115,6 +115,7 @@ public class LineupController {
         model.addAttribute("lineupForm", lineupForm);
         model.addAttribute("lineupChangeCard", lineupChangeCard);
         model.addAttribute("teamId", teamId);
+//        model.addAttribute("status", status);
 
         //Post 메소드 실행에 쓰기 위해 session 에 담는다
         HttpSession session = request.getSession();
@@ -164,8 +165,8 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
             redirectAttributes.addFlashAttribute("errCode", "needStarting");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다");
+            redirectAttributes.addFlashAttribute("lineupChangeCard", lineupChangeCard);
 
-//            return "redirect:/lineup/" + teamId + "/create";
             return "redirect:" + redirectURI;
         }
 
@@ -186,8 +187,8 @@ public class LineupController {
                 redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
                 redirectAttributes.addFlashAttribute("errCode", "needTwoPlayers");
                 redirectAttributes.addFlashAttribute("errMessage", "2명의 선수를 선택해야 합니다");
+                redirectAttributes.addFlashAttribute("lineupChangeCard", lineupChangeCard);
 
-//                return "redirect:/lineup/" + teamId + "/create";
                 return "redirect:" + redirectURI;
             }
             player2OrderIndex = lineupChangeCard.getBench() - 1;
@@ -226,9 +227,8 @@ public class LineupController {
         //redirect 설정
         //세션에 담지 않고 redirectAttributes 로 플래시 세션에 담는다. 리다리엑트 후 소멸한다
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
-        redirectAttributes.addAttribute("status", true);
+        redirectAttributes.addFlashAttribute("status", "true");
 
-//        return "redirect:/lineup/" + teamId + "/create";
         return "redirect:" + redirectURI;
     }
 
@@ -273,8 +273,8 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
             redirectAttributes.addFlashAttribute("errCode", "needStarting");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 최소한 1명의 교체 선수를 골라야 합니다");
+            redirectAttributes.addFlashAttribute("lineupChangeCard", lineupChangeCard);
 
-//            return "redirect:/lineup/" + teamId + "/create";
             return "redirect:" + redirectURI;
         }
 
@@ -295,8 +295,8 @@ public class LineupController {
             redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
             redirectAttributes.addFlashAttribute("errCode", "needTwoStartingPlayers");
             redirectAttributes.addFlashAttribute("errMessage", "주전 라인업에서 2명의 선수를 선택해야 합니다");
+            redirectAttributes.addFlashAttribute("lineupChangeCard", lineupChangeCard);
 
-//            return "redirect:/lineup/" + teamId + "/create";
             return "redirect:" + redirectURI;
         }
 
@@ -320,9 +320,8 @@ public class LineupController {
 
         //redirect 설정
         redirectAttributes.addFlashAttribute("lineupForm", lineupForm);
-        redirectAttributes.addAttribute("status", true);
+        redirectAttributes.addFlashAttribute("status", "true");
 
-//        return "redirect:/lineup/" + teamId + "/create";
         return "redirect:" + redirectURI;
     }
 
@@ -448,13 +447,22 @@ public class LineupController {
     @PostMapping("/{teamId}/{lineupId}/edit")
     public String editLineup(@PathVariable Long teamId,
                              @PathVariable Long lineupId,
-                             @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
+                             @Validated @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                              BindingResult bindingResult,
                              HttpServletRequest request,
                              Model model) {
 
         LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         log.info("[editLineup] lineupForm={}", lineupForm);
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("lineupId", lineupId);
+            model.addAttribute("lineupForm", lineupForm);
+            model.addAttribute("lineupChangeCard", lineupChangeCard);
+            model.addAttribute("teamId", teamId);
+            log.info("[editLineup] bindingResult={}", bindingResult);
+            return "lineup/editLineupForm";
+        }
 
         Member loginMember = getLoginMember(request);
 
@@ -480,6 +488,50 @@ public class LineupController {
         return "redirect:/lineup/" + teamId + "/list";
     }
 
+    /**
+     * 라인업 다른 이름으로 저장
+     */
+    @PostMapping("/{teamId}/{lineupId}/saveAs")
+    public String saveAsDifferentLineup(@PathVariable Long teamId,
+                                        @PathVariable Long lineupId,
+                                        @Validated @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
+                                        BindingResult bindingResult,
+                                        HttpServletRequest request,
+                                        Model model) {
+
+        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        log.info("[saveAsDifferentLineup] lineupForm={}", lineupForm);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("lineupId", lineupId);
+            model.addAttribute("lineupForm", lineupForm);
+            model.addAttribute("lineupChangeCard", lineupChangeCard);
+            model.addAttribute("teamId", teamId);
+            log.info("[saveAsDifferentLineup] bindingResult={}", bindingResult);
+            return "lineup/editLineupForm";
+        }
+
+        Member loginMember = getLoginMember(request);
+
+        Lineup lineup = new Lineup();
+
+        ArrayList<Player> starting = getStarting(lineupForm);
+        ArrayList<Player> bench = getBench(lineupForm);
+        log.info("[saveAsDifferentLineup] convert lineupForm success!!");
+
+        TeamMember loginTeamMember = teamMemberRepository.findByMemberIdTeamId(loginMember.getMemberId(), teamId);
+
+        lineup.setTeam(teamRepository.findByTeamId(teamId));
+        lineup.setWriter(loginTeamMember);
+        lineup.setStarting(starting);
+        lineup.setBench(bench);
+        lineup.setLineupName(lineupChangeCard.getLineupName());
+        lineup.setUpdateTime(new Date());
+
+        lineupRepository.save(lineup);
+        log.info("[saveAsDifferentLineup] lineup={}", lineup);
+
+        return "redirect:/lineup/" + teamId + "/list";
+    }
 
     /**
      * 라인업 삭제
@@ -504,6 +556,7 @@ public class LineupController {
 
         log.info("[deleteLineup] deleteLineup!!");
         lineupRepository.deleteLineup(lineupId);
+
         return "redirect:/lineup/" + teamId + "/list";
     }
 
