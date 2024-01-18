@@ -3,12 +3,12 @@ package eternal.baseball;
 import eternal.baseball.domain.custom.Birthday;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.member.Member;
-import eternal.baseball.domain.member.MemberRepository;
-import eternal.baseball.domain.team.Team;
-import eternal.baseball.domain.team.TeamRepository;
-import eternal.baseball.domain.teamMember.TeamMember;
-import eternal.baseball.domain.teamMember.TeamMemberRepository;
+import eternal.baseball.domain.Member;
+import eternal.baseball.repository.MemberRepository;
+import eternal.baseball.domain.Team;
+import eternal.baseball.repository.TeamRepository;
+import eternal.baseball.domain.TeamMember;
+import eternal.baseball.repository.TeamMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

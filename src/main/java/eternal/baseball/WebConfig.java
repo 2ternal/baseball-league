@@ -1,8 +1,8 @@
 package eternal.baseball;
 
-import eternal.baseball.web.interceptor.LogInterceptor;
-import eternal.baseball.web.interceptor.LoginCheckInterceptor;
-import eternal.baseball.web.interceptor.TeamCheckInterceptor;
+import eternal.baseball.global.interceptor.LogInterceptor;
+import eternal.baseball.global.interceptor.LoginCheckInterceptor;
+import eternal.baseball.global.interceptor.TeamCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
