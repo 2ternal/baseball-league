@@ -1,10 +1,14 @@
 package eternal.baseball.domain;
 
 import eternal.baseball.domain.custom.Birthday;
-import eternal.baseball.dto.member.JoinMemberForm;
-import lombok.Data;
+import eternal.baseball.dto.member.SignUpMemberDTO;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@Builder
 public class Member {
 
     private Long memberId;
@@ -22,15 +26,5 @@ public class Member {
         this.password = password;
         this.name = name;
         this.birthday = birthday;
-    }
-
-    public Member(JoinMemberForm joinMemberForm) {
-        Birthday joinMemberBirthday = new Birthday(joinMemberForm.getBirthdayYYYY(),
-                joinMemberForm.getBirthdayMM(),
-                joinMemberForm.getBirthdayDD());
-        this.setLoginId(joinMemberForm.getLoginId());
-        this.setPassword(joinMemberForm.getPassword());
-        this.setName(joinMemberForm.getName());
-        this.setBirthday(joinMemberBirthday);
     }
 }

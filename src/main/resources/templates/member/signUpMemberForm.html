@@ -22,7 +22,7 @@
         <h2>회원 가입</h2>
     </div>
 
-    <form action="" th:action th:object="${joinMemberForm}" method="post">
+    <form action="" th:action th:object="${signUpMember}" method="post">
         <div>
             <label for="name">이름</label>
             <input type="text" id="name" th:field="*{name}"

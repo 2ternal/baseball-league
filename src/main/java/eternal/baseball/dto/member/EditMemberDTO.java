@@ -1,15 +1,18 @@
 package eternal.baseball.dto.member;
 
 import eternal.baseball.domain.Member;
-import lombok.Data;
+import eternal.baseball.domain.custom.Birthday;
+import lombok.*;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-@Data
-public class EditMemberForm {
+@Getter
+@Setter
+@ToString
+public class EditMemberDTO {
 
     private Long memberId;
     @NotEmpty
@@ -29,15 +32,25 @@ public class EditMemberForm {
     @NotNull
     private Integer day;
 
-    public EditMemberForm() {
+    public EditMemberDTO() {
     }
 
-    public EditMemberForm(Member member) {
+    public EditMemberDTO(MemberDTO member) {
         this.memberId = member.getMemberId();
         this.name = member.getName();
         this.loginId = member.getLoginId();
         this.year = member.getBirthday().getYear();
         this.month = member.getBirthday().getMonth();
         this.day = member.getBirthday().getDay();
+    }
+
+    public Member toEntity() {
+        return Member.builder()
+                .memberId(memberId)
+                .loginId(loginId)
+                .password(changePassword)
+                .name(name)
+                .birthday(new Birthday(year, month, day))
+                .build();
     }
 }

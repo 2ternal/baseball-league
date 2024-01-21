@@ -1,14 +1,18 @@
 package eternal.baseball.dto.member;
 
-import lombok.Data;
+import eternal.baseball.domain.Member;
+import eternal.baseball.domain.custom.Birthday;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-@Data
-public class JoinMemberForm {
+@Getter
+@Setter
+public class SignUpMemberDTO {
 
     @NotEmpty
     private String loginId;
@@ -29,4 +33,13 @@ public class JoinMemberForm {
     @Max(value = 31)
     @NotNull
     private Integer birthdayDD;
+
+    public Member toEntity() {
+        return Member.builder()
+                .loginId(loginId)
+                .password(password)
+                .name(name)
+                .birthday(new Birthday(birthdayYYYY, birthdayMM, birthdayDD))
+                .build();
+    }
 }

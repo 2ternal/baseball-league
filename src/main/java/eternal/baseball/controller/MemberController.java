@@ -1,11 +1,9 @@
 package eternal.baseball.controller;
 
-import eternal.baseball.domain.custom.Birthday;
-import eternal.baseball.domain.Member;
+import eternal.baseball.dto.member.*;
+import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.service.MemberService;
 import eternal.baseball.domain.TeamMember;
-import eternal.baseball.dto.member.EditMemberForm;
-import eternal.baseball.dto.member.JoinMemberForm;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Controller
@@ -36,7 +33,7 @@ public class MemberController {
     @GetMapping("/members")
     public String members(Model model) {
 
-        List<Member> members = memberService.findMembers();
+        List<MemberDTO> members = memberService.findMembers();
         model.addAttribute("members", members);
 
         return "member/members";
@@ -45,53 +42,39 @@ public class MemberController {
     /**
      * 회원 가입 페이지
      */
-    @GetMapping("/joinMember")
-    public String joinMemberForm(Model model) {
+    @GetMapping("/signUpMember")
+    public String signUpMemberForm(Model model) {
 
-        model.addAttribute("joinMemberForm", new JoinMemberForm());
+        model.addAttribute("signUpMember", new SignUpMemberDTO());
 
-        return "member/joinMemberForm";
+        return "member/signUpMemberForm";
     }
 
     /**
      * 회원 가입
      */
-    @PostMapping("/joinMember")
-    public String joinMember(@Validated @ModelAttribute("joinMemberForm") JoinMemberForm joinMemberForm,
-                             BindingResult bindingResult) {
+    @PostMapping("/signUpMember")
+    public String signUpMember(@Validated @ModelAttribute("signUpMember") SignUpMemberDTO signUpMember,
+                               BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            log.info("[joinMember] bindingResult={}", bindingResult);
-            return "member/joinMemberForm";
+            log.info("[signUpMember] bindingResult={}", bindingResult);
+            return "member/signUpMemberForm";
         }
 
-        // ID 중복 검증
-        if (memberService.duplicateIdCheck(joinMemberForm.getLoginId())) {
-            log.info("  duplicateId={}", joinMemberForm.getLoginId());
-            bindingResult.rejectValue("loginId", "duplicateId", "중복되는 ID 입니다");
+        ResponseMemberDTO response = memberService.signUp(signUpMember);
+
+        if (response.isError()) {
+            for (BindingErrorDTO bindingErrorDTO : response.getBindingErrors()) {
+                bindingResult.rejectValue(bindingErrorDTO.getErrorField(),
+                        bindingErrorDTO.getErrorCode(),
+                        bindingErrorDTO.getErrorMessage());
+            }
+            log.info("[signUpMember] bindingResult={}", bindingResult);
+            return "member/signUpMemberForm";
         }
 
-        // 이름 중복 검증
-        if (memberService.duplicateNameCheck(joinMemberForm.getName())) {
-            log.info("  duplicateName={}", joinMemberForm.getName());
-            bindingResult.rejectValue("name", "duplicateName", "중복되는 회원 이름 입니다");
-        }
-
-        // 비밀번호 일치 검증
-        if (!Objects.equals(joinMemberForm.getPassword(), joinMemberForm.getPasswordCheck())) {
-            log.info("  mismatchPassword={}", joinMemberForm.getPassword());
-            bindingResult.rejectValue("passwordCheck", "mismatchPassword", "비밀번호가 일치하지 않습니다");
-        }
-
-        if (bindingResult.hasErrors()) {
-            log.info("[joinMember] bindingResult={}", bindingResult);
-            return "member/joinMemberForm";
-        }
-
-        Member member = new Member(joinMemberForm);
-        memberService.joinMember(member);
-
-        log.info("[joinMember] joinMember={}", member);
+        log.info("[signUpMember] signUpMember={}", signUpMember);
 
         return "redirect:members";
     }
@@ -102,7 +85,7 @@ public class MemberController {
     @GetMapping("/{memberId}")
     public String member(@PathVariable Long memberId, Model model) {
 
-        Member member = memberService.findByMemberId(memberId);
+        MemberDTO member = memberService.findMember(memberId);
         List<TeamMember> teamMemberList = teamMemberService.findByMemberId(member.getMemberId());
 
         model.addAttribute("member", member);
@@ -117,7 +100,7 @@ public class MemberController {
     @GetMapping("/myPage")
     public String myPageForm(Model model, HttpServletRequest request) {
 
-        Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        MemberDTO loginMember = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
         List<TeamMember> teamMemberList = teamMemberService.findByMemberId(loginMember.getMemberId());
 
         model.addAttribute("loginMember", loginMember);
@@ -130,14 +113,15 @@ public class MemberController {
      * 회원 정보 수정 페이지
      */
     @GetMapping("/editMember")
-    public String editMemberForm(@ModelAttribute("loginMember") EditMemberForm loginMember,
+    public String editMemberForm(@ModelAttribute("editMember") EditMemberDTO editMember,
                                  HttpServletRequest request,
                                  Model model) {
 
-        if (loginMember.getName() == null) {
-            Member member = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
-            loginMember = new EditMemberForm(member);
-            model.addAttribute("loginMember", loginMember);
+        if (editMember.getName() == null) {
+            MemberDTO member = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+            editMember = new EditMemberDTO(member);
+            model.addAttribute("editMember", editMember);
+            log.info("[editMemberForm] editMember={}", editMember);
         }
 
         return "member/editMemberForm";
@@ -147,7 +131,7 @@ public class MemberController {
      * 회원 정보 수정
      */
     @PostMapping("/editMember")
-    public String editMember(@Validated @ModelAttribute("loginMember") EditMemberForm loginMember,
+    public String editMember(@Validated @ModelAttribute("editMember") EditMemberDTO editMember,
                              BindingResult bindingResult,
                              HttpServletRequest request) {
 
@@ -156,43 +140,25 @@ public class MemberController {
             return "member/editMemberForm";
         }
 
-        Member sessionMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        MemberDTO sessionMember = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
 
-        // 비밀번호 확인 검증
-        if (!sessionMember.getPassword().equals(loginMember.getPassword())) {
-            bindingResult.rejectValue("password", "wrongPassword", "비밀번호가 틀립니다");
-            return "member/editMemberForm";
-        }
+        ResponseMemberDTO response = memberService.editMember(sessionMember, editMember);
 
-        // 이름 중복 검증
-        if (!Objects.equals(sessionMember.getName(), loginMember.getName()) && memberService.duplicateNameCheck(loginMember.getName())) {
-            log.info("  duplicateName={}", sessionMember.getName());
-            bindingResult.rejectValue("name", "duplicateName", "중복되는 회원 이름 입니다");
-        }
-
-        // 변경 비밀번호 일치 검증
-        if (!loginMember.getChangePassword().equals(loginMember.getChangePasswordCheck())) {
-            bindingResult.rejectValue("changePasswordCheck", "wrongChangePassword", "변경할 비밀번호가 일치하지 않습니다");
-            return "member/editMemberForm";
-        }
-
-        if (bindingResult.hasErrors()) {
+        if (response.isError()) {
+            for (BindingErrorDTO bindingErrorDTO : response.getBindingErrors()) {
+                bindingResult.rejectValue(bindingErrorDTO.getErrorField(),
+                        bindingErrorDTO.getErrorCode(),
+                        bindingErrorDTO.getErrorMessage());
+            }
             log.info("[editMember] bindingResult={}", bindingResult);
             return "member/editMemberForm";
         }
 
-        sessionMember.setName(loginMember.getName());
-        sessionMember.setBirthday(new Birthday(loginMember.getYear(), loginMember.getMonth(), loginMember.getDay()));
-        if (!loginMember.getChangePassword().isEmpty()) {
-            sessionMember.setPassword(loginMember.getChangePassword());
-        }
-
-        Member editMember = memberService.editMember(loginMember.getMemberId(), sessionMember);
-
-        log.info("[editMember] editMember={}", editMember);
+        MemberDTO editSessionMemberDTO = response.getMember();
+        log.info("[editMember] editMember={}", editSessionMemberDTO);
 
         HttpSession session = request.getSession();
-        session.setAttribute(SessionConst.LOGIN_MEMBER, sessionMember);
+        session.setAttribute(SessionConst.LOGIN_MEMBER, editSessionMemberDTO);
 
         return "redirect:myPage";
     }

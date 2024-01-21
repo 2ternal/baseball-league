@@ -1,13 +1,16 @@
 package eternal.baseball.controller;
 
+import eternal.baseball.dto.member.MemberDTO;
+import eternal.baseball.dto.member.ResponseMemberDTO;
+import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.service.LoginService;
-import eternal.baseball.domain.Member;
-import eternal.baseball.dto.login.LoginForm;
+import eternal.baseball.dto.login.LoginDTO.*;
 import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +30,7 @@ public class LoginController {
      * 로그인 페이지
      */
     @GetMapping("login")
-    public String loginForm(@ModelAttribute("loginForm") LoginForm form) {
+    public String loginForm(@ModelAttribute("loginRequest") LoginRequestDTO loginRequest) {
         return "login/loginForm";
     }
 
@@ -35,7 +38,7 @@ public class LoginController {
      * 로그인 요청
      */
     @PostMapping("login")
-    public String login(@ModelAttribute LoginForm loginForm,
+    public String login(@Validated @ModelAttribute("loginRequest") LoginRequestDTO loginRequest,
                         BindingResult bindingResult,
                         @RequestParam(defaultValue = "/") String redirectURL,
                         HttpServletRequest request) {
@@ -44,14 +47,26 @@ public class LoginController {
             return "login/loginForm";
         }
 
-        Member loginMember = loginService.login(loginForm.getLoginId(), loginForm.getPassword());
+        ResponseMemberDTO response = loginService.login(loginRequest);
 
-        if (loginMember == null) {
-            bindingResult.reject("loginFail", "아이디 또는 비밀번호가 맞지 않습니다");
+        if (response.isError()) {
+            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
+                if (bindingError.getErrorField().isEmpty()) {
+                    bindingResult.reject(bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                } else {
+                    bindingResult.rejectValue(bindingError.getErrorField(),
+                            bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                }
+            }
+            log.info("[joinMember] bindingResult={}", bindingResult);
             return "login/loginForm";
         }
 
         HttpSession session = request.getSession();
+        MemberDTO loginMember = response.getMember();
+        log.info("[joinMember] loginMember={}", loginMember);
 
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
         session.setAttribute(SessionConst.LOGIN_CHECK, SessionConst.LOGIN_VALID);
