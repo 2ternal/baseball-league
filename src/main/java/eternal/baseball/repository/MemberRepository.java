@@ -1,7 +1,6 @@
 package eternal.baseball.repository;
 
 import eternal.baseball.domain.Member;
-import eternal.baseball.dto.member.MemberDTO;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -15,28 +14,18 @@ public class MemberRepository {
     /**
      * 새 멤버 추가
      */
-    public MemberDTO save(Member member) {
+    public Member save(Member member) {
         member.setMemberId(++sequence);
         memberStore.put(member.getMemberId(), member);
-        return MemberDTO.builder()
-                .memberId(member.getMemberId())
-                .loginId(member.getLoginId())
-                .name(member.getName())
-                .birthday(member.getBirthday())
-                .build();
+        return member;
     }
 
     /**
      * 멤버 정보 수정
      */
-    public MemberDTO edit(Long memberId, Member member) {
+    public Member edit(Long memberId, Member member) {
         memberStore.put(memberId, member);
-        return MemberDTO.builder()
-                .memberId(member.getMemberId())
-                .loginId(member.getLoginId())
-                .name(member.getName())
-                .birthday(member.getBirthday())
-                .build();
+        return member;
     }
 
     /**

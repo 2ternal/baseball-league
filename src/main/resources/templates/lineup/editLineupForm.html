@@ -46,7 +46,7 @@
 
     <!-- 추가 -->
     <h3 class="success-status" th:if="${#strings.equals(status, 'true')}" th:text="'교체 성공'"></h3>
-    <form action="" th:action="@{/lineup/{teamId}/{lineupId}/edit(teamId=${teamId}, lineupId=${lineupId})}"
+    <form action="" th:action="@{/lineup/{teamCode}/{lineupId}/edit(teamCode=${teamCode}, lineupId=${lineupId})}"
           th:object="${lineupChangeCard}" method="post">
         <div th:if="${#fields.hasGlobalErrors()}">
             <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>
@@ -104,14 +104,14 @@
         <div class="row">
             <div class="col">
                 <button class="w-100 btn btn-primary btn-lg"
-                        th:formaction="@{/lineup/{teamId}/changeOrder(teamId=${teamId})}"
+                        th:formaction="@{/lineup/{teamCode}/changeOrder(teamCode=${teamCode})}"
                         type="submit" th:text="#{button.swap.order}">
                     타순 교체
                 </button>
             </div>
             <div class="col">
                 <button class="w-100 btn btn-secondary btn-lg"
-                        th:formaction="@{/lineup/{teamId}/changePosition(teamId=${teamId})}"
+                        th:formaction="@{/lineup/{teamCode}/changePosition(teamCode=${teamCode})}"
                         type="submit" th:text="#{button.swap.position}">
                     포지션 교체
                 </button>
@@ -126,7 +126,7 @@
             </div>
             <div class="col">
                 <button class="w-100 btn btn-success btn-lg"
-                        th:formaction="@{/lineup/{teamId}/{lineupId}/saveAs(teamId=${teamId}, lineupId=${lineupId})}"
+                        th:formaction="@{/lineup/{teamCode}/{lineupId}/saveAs(teamCode=${teamCode}, lineupId=${lineupId})}"
                         type="submit" th:text="#{button.saveAs}">
                     다른이름으로 저장
                 </button>

@@ -1,13 +1,18 @@
 package eternal.baseball.controller;
 
+import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.Member;
 import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
+import eternal.baseball.dto.member.MemberDTO;
+import eternal.baseball.dto.team.CreateTeamDTO;
+import eternal.baseball.dto.team.TeamDTO;
+import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
+import eternal.baseball.dto.util.BindingErrorDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
 import eternal.baseball.global.constant.SessionConst;
-import eternal.baseball.dto.team.CreateTeamForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -44,7 +49,7 @@ public class TeamController {
      */
     @GetMapping("/createTeam")
     public String createTeamForm(Model model) {
-        model.addAttribute("createTeamForm", new CreateTeamForm());
+        model.addAttribute("createTeamForm", new CreateTeamDTO());
         return "team/createTeamForm";
     }
 
@@ -52,44 +57,48 @@ public class TeamController {
      * 팀 창단
      */
     @PostMapping("/createTeam")
-    public String createTeam(@Validated @ModelAttribute("createTeamForm") CreateTeamForm createTeamForm,
+    public String createTeam(@Validated @ModelAttribute("createTeamForm") CreateTeamDTO createTeamDTO,
                              BindingResult bindingResult,
                              HttpServletRequest request) {
-
-        // 팀명 중복 검증
-        if (teamService.duplicateTeamNameCheck(createTeamForm.getTeamName())) {
-            log.info("[createTeam] duplicateTeamName={}", createTeamForm.getTeamName());
-            bindingResult.rejectValue("teamName", "duplicateTeamName", "중복되는 팀명 입니다");
-        }
-
-        // 팀 코드 중복 검증
-        if (teamService.duplicateTeamCodeCheck(createTeamForm.getTeamCode())) {
-            log.info("[createTeam] duplicateTeamCode={}", createTeamForm.getTeamCode());
-            bindingResult.rejectValue("teamCode", "duplicateTeamCode", "중복되는 팀 코드 입니다");
-        }
 
         if (bindingResult.hasErrors()) {
             log.info("[createTeam] bindingResult={}", bindingResult);
             return "team/createTeamForm";
         }
 
-        Member loginMember = getLoginMember(request);
+        MemberDTO loginMember = getLoginMember(request);
         log.info("[createTeam] loginMember={}", loginMember);
+        log.info("[createTeam] createTeamDTO={}", createTeamDTO);
 
-        //검증 후 팀 창단
-        Team team = new Team();
-        team.createTeamFormToTeam(createTeamForm);
-        team.setOwner(loginMember);
-        log.info("[createTeam] owner={}", team.getOwner());
+        ResponseDataDTO<TeamDTO> response = teamService.createTeam(createTeamDTO, loginMember);
 
-        teamService.createTeam(team);
-        log.info("[createTeam] team={}", team);
+        if (response.isError()) {
+            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
+                if (bindingError.getErrorField().isEmpty()) {
+                    bindingResult.reject(bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                } else {
+                    bindingResult.rejectValue(bindingError.getErrorField(),
+                            bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                }
+            }
+            log.info("[createTeam] bindingResult={}", bindingResult);
+            return "team/createTeamForm";
+        }
 
-        //팀원에 추가
-        TeamMember teamMember = new TeamMember(loginMember, team, TeamMemberShip.OWNER);
+        TeamDTO teamDTO = response.getData();
 
-        teamMemberService.joinTeamMember(teamMember);
-        log.info("[createTeam] teamMember={}", teamMember);
+        RequestTeamMemberDTO teamMemberDTO = RequestTeamMemberDTO.builder()
+                .teamCode(teamDTO.getTeamCode())
+                .member(loginMember)
+                .teamMemberShip(TeamMemberShip.OWNER)
+                .mainPositionEng(createTeamDTO.getMainPositionEng())
+                .backNumber(createTeamDTO.getBackNumber())
+                .build();
+
+        teamMemberService.joinTeamMember(teamMemberDTO);
+        log.info("[createTeam] teamMember={}", teamMemberDTO);
 
         return "redirect:/team/teams";
     }
@@ -97,16 +106,16 @@ public class TeamController {
     /**
      * 팀 상세 페이지
      */
-    @GetMapping("/{teamId}")
-    public String team(@PathVariable Long teamId, Model model, HttpServletRequest request) {
+    @GetMapping("/{teamCode}")
+    public String team(@PathVariable String teamCode, Model model, HttpServletRequest request) {
 
-        Team team = teamService.findTeam(teamId);
-        List<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamId);
+        TeamDTO team = teamService.findTeam(teamCode);
+        List<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamCode);
 
-        Member loginMember = getLoginMember(request);
-        log.info("[team] loginMember={}", loginMember);
+        MemberDTO loginMemberDTO = getLoginMember(request);
+        log.info("[team] loginMember={}", loginMemberDTO);
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         log.info("[team] loginTeamMember={}", loginTeamMember);
         if (loginTeamMember != null && loginTeamMember.getMemberShip().getGrade() < TeamMemberShip.COACH.getGrade()) {
@@ -120,8 +129,13 @@ public class TeamController {
         return "team/team";
     }
 
-    private static Member getLoginMember(HttpServletRequest request) {
+    private static MemberDTO getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
+    }
+
+    @ModelAttribute("positions")
+    public List<Position> positions() {
+        return List.of(Position.values());
     }
 }

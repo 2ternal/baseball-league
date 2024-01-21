@@ -64,7 +64,7 @@
         <div class="col">
             <button class="w-100 btn btn-secondary btn-lg"
                     onclick="location.href='members.html'"
-                    th:onclick="|location.href='@{/team/{teamId}(teamId=${teamMember.team.teamId})}'|"
+                    th:onclick="|location.href='@{/team/{teamCode}(teamCode=${teamMember.team.teamCode})}'|"
                     type="button" th:text="#{button.list}">목록으로
             </button>
         </div>

@@ -25,6 +25,7 @@ public class MemberService {
      * 회원 가입
      */
     public ResponseMemberDTO signUp(SignUpMemberDTO signUpMember) {
+
         List<BindingErrorDTO> bindingErrors = new ArrayList<>();
         // 로그인 Id 중복 검증
         if (!ObjectUtils.isEmpty(memberRepository.findByLoginId(signUpMember.getLoginId()))) {
@@ -64,10 +65,16 @@ public class MemberService {
                     .build();
         }
 
-        MemberDTO memberDTO = memberRepository.save(signUpMember.toEntity());
+        Member member = memberRepository.save(signUpMember.toEntity());
+
         return ResponseMemberDTO.builder()
                 .error(false)
-                .member(memberDTO)
+                .member(MemberDTO.builder()
+                        .memberId(member.getMemberId())
+                        .loginId(member.getLoginId())
+                        .name(member.getName())
+                        .birthday(member.getBirthday())
+                        .build())
                 .build();
     }
 
@@ -75,6 +82,7 @@ public class MemberService {
      * 멤버 정보 수정
      */
     public ResponseMemberDTO editMember(MemberDTO sessionMember, EditMemberDTO editMember) {
+
         String memberPassword = memberRepository.findByMemberId(sessionMember.getMemberId())
                 .getPassword();
         List<BindingErrorDTO> bindingErrors = new ArrayList<>();
@@ -117,11 +125,16 @@ public class MemberService {
                     .build();
         }
 
-        MemberDTO memberDTO = memberRepository.edit(sessionMember.getMemberId(), editMember.toEntity());
+        Member member = memberRepository.edit(sessionMember.getMemberId(), editMember.toEntity());
 
         return ResponseMemberDTO.builder()
                 .error(false)
-                .member(memberDTO)
+                .member(MemberDTO.builder()
+                        .memberId(member.getMemberId())
+                        .loginId(member.getLoginId())
+                        .name(member.getName())
+                        .birthday(member.getBirthday())
+                        .build())
                 .build();
     }
 

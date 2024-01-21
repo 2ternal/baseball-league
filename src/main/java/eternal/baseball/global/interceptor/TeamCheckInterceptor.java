@@ -1,6 +1,7 @@
 package eternal.baseball.global.interceptor;
 
 import eternal.baseball.domain.Member;
+import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
@@ -27,19 +28,15 @@ public class TeamCheckInterceptor implements HandlerInterceptor {
         log.info("[TeamCheckInterceptor] 팀 가입 체크 인터셉터 실행 in [{}]", requestURI);
         log.info("[TeamCheckInterceptor] 이전 url={}", referer);
 
-        Member loginMember = (Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        MemberDTO loginMemberDTO = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
         int i = requestURI.indexOf("lineup/") + "lineup/".length();
         String substring = requestURI.substring(i);
 
         int j = substring.indexOf("/");
-        String stringTeamId = substring.substring(0, j);
-        log.info("[TeamCheckInterceptor] stringTeamId={}", stringTeamId);
+        String stringTeamCode = substring.substring(0, j);
+        log.info("[TeamCheckInterceptor] stringTeamCode={}", stringTeamCode);
 
-        Long teamId = Long.parseLong(stringTeamId);
-
-        log.info("[TeamCheckInterceptor] 팀 Id={}", teamId);
-
-        Boolean teamMemberCheck = teamMemberService.joinTeamMemberCheck(loginMember.getMemberId(), teamId);
+        Boolean teamMemberCheck = teamMemberService.joinTeamMemberCheck(loginMemberDTO.getMemberId(), stringTeamCode);
 
         if (!teamMemberCheck) {
             response.sendRedirect("/alert/notInclude?redirectURL=" + referer);

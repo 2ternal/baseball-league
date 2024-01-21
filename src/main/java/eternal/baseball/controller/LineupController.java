@@ -1,11 +1,12 @@
 package eternal.baseball.controller;
 
+import eternal.baseball.domain.Member;
 import eternal.baseball.domain.custom.Player;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.Lineup;
-import eternal.baseball.domain.Member;
 import eternal.baseball.domain.TeamMember;
+import eternal.baseball.repository.TeamRepository;
 import eternal.baseball.service.LineupService;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
@@ -40,11 +41,13 @@ public class LineupController {
     private final TeamMemberService teamMemberService;
     private final LineupService lineupService;
 
+    private final TeamRepository teamRepository;
+
     /**
      * 라인업 상세 페이지
      */
-    @GetMapping("/{teamId}/{lineupId}")
-    public String lineup(@PathVariable Long teamId, @PathVariable Long lineupId, Model model) {
+    @GetMapping("/{teamCode}/{lineupId}")
+    public String lineup(@PathVariable String teamCode, @PathVariable Long lineupId, Model model) {
         Lineup lineup = lineupService.findLineup(lineupId);
         model.addAttribute("lineup", lineup);
         return "lineup/lineup";
@@ -53,19 +56,19 @@ public class LineupController {
     /**
      * 라인업 목록 페이지
      */
-    @GetMapping("/{teamId}/list")
-    public String lineupList(@PathVariable Long teamId, Model model) {
-        List<Lineup> teamLineupList = lineupService.findTeamLineupList(teamId);
+    @GetMapping("/{teamCode}/list")
+    public String lineupList(@PathVariable String teamCode, Model model) {
+        List<Lineup> teamLineupList = lineupService.findTeamLineupList(teamCode);
         model.addAttribute("lineupList", teamLineupList);
-        model.addAttribute("teamId", teamId);
+        model.addAttribute("teamCode", teamCode);
         return "lineup/lineupList";
     }
 
     /**
      * 라인업 작성 페이지
      */
-    @GetMapping("/{teamId}/create")
-    public String writeLineupForm(@PathVariable Long teamId,
+    @GetMapping("/{teamCode}/create")
+    public String writeLineupForm(@PathVariable String teamCode,
                                   @ModelAttribute("lineupForm") LineupFormDto lineupForm,
                                   @ModelAttribute("errCode") String errCode,
                                   @ModelAttribute("errMessage") String errMessage,
@@ -85,8 +88,8 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        Member loginMember = getLoginMember(request);
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        Member loginMemberDTO = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
             String redirectURI = request.getHeader("REFERER");
@@ -96,7 +99,7 @@ public class LineupController {
         }
 
         if (lineupForm.getStartingPlayers() == null) {
-            ArrayList<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamId);
+            ArrayList<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamCode);
             if (teamMembers.size() < 9) {
                 log.info("[writeLineupForm] be short of teamMember={}", teamMembers.size());
                 String redirectURI = request.getHeader("REFERER");
@@ -116,7 +119,7 @@ public class LineupController {
 
         model.addAttribute("lineupForm", lineupForm);
         model.addAttribute("lineupChangeCard", lineupChangeCard);
-        model.addAttribute("teamId", teamId);
+        model.addAttribute("teamCode", teamCode);
 
         //Post 메소드 실행에 쓰기 위해 session 에 담는다
         HttpSession session = request.getSession();
@@ -127,8 +130,8 @@ public class LineupController {
     /**
      * 라인업 작성 페이지 타순 교체
      */
-    @PostMapping("/{teamId}/changeOrder")
-    public String changeOrder(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/changeOrder")
+    public String changeOrder(@PathVariable String teamCode,
                               @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes,
@@ -236,8 +239,8 @@ public class LineupController {
     /**
      * 라인업 작성 페이지 포지션 교체
      */
-    @PostMapping("/{teamId}/changePosition")
-    public String changePosition(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/changePosition")
+    public String changePosition(@PathVariable String teamCode,
                                  @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                                  BindingResult bindingResult,
                                  RedirectAttributes redirectAttributes,
@@ -329,8 +332,8 @@ public class LineupController {
     /**
      * 라인업 작성
      */
-    @PostMapping("/{teamId}/create")
-    public String writeLineup(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/create")
+    public String writeLineup(@PathVariable String teamCode,
                               @Validated @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                               BindingResult bindingResult,
                               HttpServletRequest request,
@@ -341,12 +344,12 @@ public class LineupController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("lineupForm", lineupForm);
             model.addAttribute("lineupChangeCard", lineupChangeCard);
-            model.addAttribute("teamId", teamId);
+            model.addAttribute("teamCode", teamCode);
             log.info("[writeLineup] bindingResult={}", bindingResult);
             return "lineup/writeLineupForm";
         }
 
-        Member loginMember = getLoginMember(request);
+        Member loginMemberDTO = getLoginMember(request);
         log.info("[writeLineup] lineupForm={}", lineupForm);
 
         Lineup lineup = new Lineup();
@@ -356,11 +359,11 @@ public class LineupController {
         ArrayList<Player> bench = getBench(lineupForm);
         log.info("[writeLineup] convert lineupForm success!!");
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         log.info("[writeLineup] loginTeamMember={}", loginTeamMember);
 
-        lineup.setTeam(teamService.findTeam(teamId));
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -370,14 +373,14 @@ public class LineupController {
         lineupService.createLineup(lineup);
         log.info("[writeLineup] lineup={}", lineup);
 
-        return "redirect:/lineup/" + teamId + "/list";
+        return "redirect:/lineup/" + teamCode + "/list";
     }
 
     /**
      * 라인업 수정 폼
      */
-    @GetMapping("/{teamId}/{lineupId}/edit")
-    public String editLineupForm(@PathVariable Long teamId,
+    @GetMapping("/{teamCode}/{lineupId}/edit")
+    public String editLineupForm(@PathVariable String teamCode,
                                  @PathVariable Long lineupId,
                                  @ModelAttribute("lineupForm") LineupFormDto lineupForm,
                                  @ModelAttribute("errCode") String errCode,
@@ -398,8 +401,8 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        Member loginMember = getLoginMember(request);
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        Member loginMemberDTO = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
             String redirectURI = request.getHeader("REFERER");
@@ -409,7 +412,7 @@ public class LineupController {
         }
 
         if (lineupForm.getStartingPlayers() == null) {
-            ArrayList<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamId);
+            ArrayList<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamCode);
             if (teamMembers.size() < 9) {
                 log.info("[editLineupForm] be short of teamMember={}", teamMembers.size());
                 String redirectURI = request.getHeader("REFERER");
@@ -434,7 +437,7 @@ public class LineupController {
         model.addAttribute("lineupId", lineupId);
         model.addAttribute("lineupForm", lineupForm);
         model.addAttribute("lineupChangeCard", lineupChangeCard);
-        model.addAttribute("teamId", teamId);
+        model.addAttribute("teamCode", teamCode);
 
         //Post 메소드 실행에 쓰기 위해 session 에 담는다
         HttpSession session = request.getSession();
@@ -445,8 +448,8 @@ public class LineupController {
     /**
      * 라인업 수정
      */
-    @PostMapping("/{teamId}/{lineupId}/edit")
-    public String editLineup(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/{lineupId}/edit")
+    public String editLineup(@PathVariable String teamCode,
                              @PathVariable Long lineupId,
                              @Validated @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                              BindingResult bindingResult,
@@ -460,12 +463,12 @@ public class LineupController {
             model.addAttribute("lineupId", lineupId);
             model.addAttribute("lineupForm", lineupForm);
             model.addAttribute("lineupChangeCard", lineupChangeCard);
-            model.addAttribute("teamId", teamId);
+            model.addAttribute("teamCode", teamCode);
             log.info("[editLineup] bindingResult={}", bindingResult);
             return "lineup/editLineupForm";
         }
 
-        Member loginMember = getLoginMember(request);
+        Member loginMemberDTO = getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -473,10 +476,10 @@ public class LineupController {
         ArrayList<Player> bench = getBench(lineupForm);
         log.info("[editLineup] convert lineupForm success!!");
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         lineup.setLineupId(lineupId);
-        lineup.setTeam(teamService.findTeam(teamId));
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -486,14 +489,14 @@ public class LineupController {
         lineupService.editLineup(lineupId, lineup);
         log.info("[editLineup] lineup={}", lineup);
 
-        return "redirect:/lineup/" + teamId + "/list";
+        return "redirect:/lineup/" + teamCode + "/list";
     }
 
     /**
      * 라인업 다른 이름으로 저장
      */
-    @PostMapping("/{teamId}/{lineupId}/saveAs")
-    public String saveAsDifferentLineup(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/{lineupId}/saveAs")
+    public String saveAsDifferentLineup(@PathVariable String teamCode,
                                         @PathVariable Long lineupId,
                                         @Validated @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
                                         BindingResult bindingResult,
@@ -506,12 +509,12 @@ public class LineupController {
             model.addAttribute("lineupId", lineupId);
             model.addAttribute("lineupForm", lineupForm);
             model.addAttribute("lineupChangeCard", lineupChangeCard);
-            model.addAttribute("teamId", teamId);
+            model.addAttribute("teamCode", teamCode);
             log.info("[saveAsDifferentLineup] bindingResult={}", bindingResult);
             return "lineup/editLineupForm";
         }
 
-        Member loginMember = getLoginMember(request);
+        Member loginMemberDTO = getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -519,9 +522,9 @@ public class LineupController {
         ArrayList<Player> bench = getBench(lineupForm);
         log.info("[saveAsDifferentLineup] convert lineupForm success!!");
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
-        lineup.setTeam(teamService.findTeam(teamId));
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -531,20 +534,20 @@ public class LineupController {
         lineupService.createLineup(lineup);
         log.info("[saveAsDifferentLineup] lineup={}", lineup);
 
-        return "redirect:/lineup/" + teamId + "/list";
+        return "redirect:/lineup/" + teamCode + "/list";
     }
 
     /**
      * 라인업 삭제
      */
-    @PostMapping("/{teamId}/{lineupId}/delete")
-    public String deleteLineup(@PathVariable Long teamId,
+    @PostMapping("/{teamCode}/{lineupId}/delete")
+    public String deleteLineup(@PathVariable Long teamCode,
                                @PathVariable Long lineupId,
                                HttpServletRequest request,
                                Model model) {
 
-        Member loginMember = getLoginMember(request);
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamId);
+        Member loginMemberDTO = getLoginMember(request);
+        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
         Lineup lineup = lineupService.findLineup(lineupId);
 
         if (!loginTeamMember.getMemberShip().equals(TeamMemberShip.OWNER) && loginTeamMember != lineup.getWriter()) {
@@ -558,7 +561,7 @@ public class LineupController {
         log.info("[deleteLineup] deleteLineup!!");
         lineupService.deleteLineup(lineupId);
 
-        return "redirect:/lineup/" + teamId + "/list";
+        return "redirect:/lineup/" + teamCode + "/list";
     }
 
     @ModelAttribute("lineupNumber")

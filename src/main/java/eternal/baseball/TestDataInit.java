@@ -1,9 +1,9 @@
 package eternal.baseball;
 
+import eternal.baseball.domain.Member;
 import eternal.baseball.domain.custom.Birthday;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.Member;
 import eternal.baseball.repository.MemberRepository;
 import eternal.baseball.domain.Team;
 import eternal.baseball.repository.TeamRepository;
@@ -107,15 +107,15 @@ public class TestDataInit {
             String memberName = "멤버" + i;
             Birthday birthday = new Birthday(2000 + i, 11, i);
 
-            Member member = new Member();
-            member.setLoginId(memberLoginId);
-            member.setPassword(memberPassword);
-            member.setName(memberName);
-            member.setBirthday(birthday);
+            Member memberDTO = new Member();
+            memberDTO.setLoginId(memberLoginId);
+            memberDTO.setPassword(memberPassword);
+            memberDTO.setName(memberName);
+            memberDTO.setBirthday(birthday);
 
-            memberRepository.save(member);
+            memberRepository.save(memberDTO);
 
-            TeamMember teamMember3 = new TeamMember(member, team3, TeamMemberShip.PLAYER, Position.NONE, (long) i);
+            TeamMember teamMember3 = new TeamMember(memberDTO, team3, TeamMemberShip.PLAYER, Position.NONE, (long) i);
             teamMemberRepository.save(teamMember3);
         }
     }

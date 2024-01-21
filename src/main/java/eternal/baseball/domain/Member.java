@@ -1,7 +1,6 @@
 package eternal.baseball.domain;
 
 import eternal.baseball.domain.custom.Birthday;
-import eternal.baseball.dto.member.SignUpMemberDTO;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

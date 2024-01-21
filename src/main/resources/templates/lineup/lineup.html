@@ -74,13 +74,13 @@
         <div class="col">
             <button class="w-100 btn btn-primary btn-lg"
                     onclick="location.href='editTeamForm.html'"
-                    th:onclick="|location.href='@{/lineup/{teamId}/{lineupId}/edit(teamId=${teamId}, lineupId=${lineup.lineupId})}'|"
+                    th:onclick="|location.href='@{/lineup/{teamCode}/{lineupId}/edit(teamCode=${teamCode}, lineupId=${lineup.lineupId})}'|"
                     type="button" th:text="#{button.edit}">
                 수정
             </button>
         </div>
         <div class="col">
-            <form action="" method="post" th:action="@{/lineup/{teamId}/{lineupId}/delete(teamId=${teamId}, lineupId=${lineup.lineupId})}">
+            <form action="" method="post" th:action="@{/lineup/{teamCode}/{lineupId}/delete(teamCode=${teamCode}, lineupId=${lineup.lineupId})}">
                 <button href="lineup.html"
                         class="w-100 btn btn-danger btn-lg"
                         onclick="if(!confirm('삭제 하시겠습니까?')){return false;}"
@@ -98,7 +98,7 @@
         <div class="col">
             <button class="w-100 btn btn-secondary btn-lg"
                     onclick="location.href='teams.html'"
-                    th:onclick="|location.href='@{/lineup/{teamId}/list(teamId=${lineup.team.teamId})}'|"
+                    th:onclick="|location.href='@{/lineup/{teamCode}/list(teamCode=${lineup.team.teamCode})}'|"
                     type="button" th:text="#{button.list.lineup}">
                 라인업 목록으로
             </button>

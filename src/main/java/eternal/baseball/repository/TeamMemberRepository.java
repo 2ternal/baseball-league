@@ -48,6 +48,15 @@ public class TeamMemberRepository {
     }
 
     /**
+     * 팀 코드로 다수의 teamMember 찾기
+     */
+    public ArrayList<TeamMember> findByTeamCode(String teamCode) {
+        return (ArrayList<TeamMember>) findAll().stream()
+                .filter(m -> m.getTeam().getTeamCode().equals(teamCode))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 멤버 이름으로 다수의 teamMember 찾기
      */
     public List<TeamMember> findByMemberName(String memberName) {
@@ -72,6 +81,17 @@ public class TeamMemberRepository {
         return findAll().stream()
                 .filter(m -> m.getMember().getMemberId().equals(memberId))
                 .filter(m -> m.getTeam().getTeamId().equals(teamId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 멤버 ID와 팀 코드로 teamMember 찾기
+     */
+    public TeamMember findByMemberIdTeamCode(Long memberId, String teamCode) {
+        return findAll().stream()
+                .filter(m -> m.getMember().getMemberId().equals(memberId))
+                .filter(m -> m.getTeam().getTeamCode().equals(teamCode))
                 .findFirst()
                 .orElse(null);
     }

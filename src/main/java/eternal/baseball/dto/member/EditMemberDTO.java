@@ -35,13 +35,13 @@ public class EditMemberDTO {
     public EditMemberDTO() {
     }
 
-    public EditMemberDTO(MemberDTO member) {
-        this.memberId = member.getMemberId();
-        this.name = member.getName();
-        this.loginId = member.getLoginId();
-        this.year = member.getBirthday().getYear();
-        this.month = member.getBirthday().getMonth();
-        this.day = member.getBirthday().getDay();
+    public EditMemberDTO(eternal.baseball.dto.member.MemberDTO memberDTO) {
+        this.memberId = memberDTO.getMemberId();
+        this.name = memberDTO.getName();
+        this.loginId = memberDTO.getLoginId();
+        this.year = memberDTO.getBirthday().getYear();
+        this.month = memberDTO.getBirthday().getMonth();
+        this.day = memberDTO.getBirthday().getDay();
     }
 
     public Member toEntity() {

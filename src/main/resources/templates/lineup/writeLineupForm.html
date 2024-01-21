@@ -46,7 +46,7 @@
 
     <!-- 추가 -->
     <h3 class="success-status" th:if="${#strings.equals(status, 'true')}" th:text="'교체 성공'"></h3>
-    <form action="" th:action="@{/lineup/{teamId}/create(teamId=${teamId})}"
+    <form action="" th:action="@{/lineup/{teamCode}/create(teamCode=${teamCode})}"
           th:object="${lineupChangeCard}" method="post">
         <!--        타순 테이블 만들 예정-->
         <div th:if="${#fields.hasGlobalErrors()}">
@@ -105,14 +105,14 @@
         <div class="row">
             <div class="col">
                 <button class="w-100 btn btn-primary btn-lg"
-                        th:formaction="@{/lineup/{teamId}/changeOrder(teamId=${teamId})}"
+                        th:formaction="@{/lineup/{teamCode}/changeOrder(teamCode=${teamCode})}"
                         type="submit" th:text="#{button.swap.order}">
                     타순 교체
                 </button>
             </div>
             <div class="col">
                 <button class="w-100 btn btn-secondary btn-lg"
-                        th:formaction="@{/lineup/{teamId}/changePosition(teamId=${teamId})}"
+                        th:formaction="@{/lineup/{teamCode}/changePosition(teamCode=${teamCode})}"
                         type="submit" th:text="#{button.swap.position}">
                     포지션 교체
                 </button>

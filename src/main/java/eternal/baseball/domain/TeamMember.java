@@ -4,9 +4,13 @@ import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.dto.teamMember.EditTeamMemberDto;
 import eternal.baseball.dto.teamMember.JoinTeamMemberDto;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TeamMember {
 
     private Long teamMemberId;
@@ -15,9 +19,6 @@ public class TeamMember {
     private TeamMemberShip memberShip;
     private Position mainPosition;
     private Long backNumber;
-
-    public TeamMember() {
-    }
 
     public TeamMember(Member member, Team team, JoinTeamMemberDto joinTeamMemberDto) {
         this.member = member;

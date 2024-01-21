@@ -45,9 +45,9 @@ public class LineupService {
     /**
      * teamId 로 라인업 리스트 찾기
      */
-    public List<Lineup> findTeamLineupList(Long teamId) {
+    public List<Lineup> findTeamLineupList(String teamCode) {
         return lineupRepository.findAll().stream()
-                .filter(l -> l.getTeam().getTeamId().equals(teamId))
+                .filter(l -> l.getTeam().getTeamCode().equals(teamCode))
                 .collect(Collectors.toList());
     }
 }

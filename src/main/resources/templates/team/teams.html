@@ -32,9 +32,9 @@
             </thead>
             <tbody>
             <tr th:each="team : ${teams}">
-                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${team.teamId})}"
+                <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${team.teamCode})}"
                        th:text="${team.teamId}">팀 ID</a></td>
-                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${team.teamId})}"
+                <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${team.teamCode})}"
                        th:text="${team.teamName}">팀명</a></td>
                 <td th:text="${team.teamCode}">팀 코드</td>
                 <td th:text="${team.owner.name}">구단주 이름</td>

@@ -41,6 +41,28 @@
                 팀 코드 필드 오류
             </div>
         </div>
+        <div>
+            <div th:text="#{label.teamMember.mainPosition}">mainPosition</div>
+            <select th:field="*{mainPositionEng}" class="form-select">
+                <option value="" selected>==포지션 선택==</option>
+                <option th:each="position : ${positions}"
+                        th:value="${position}"
+                        th:text="${position.description}">position
+                </option>
+            </select>
+            <div class="field-error" th:errors="*{mainPositionEng}">
+                mainPosition 오류
+            </div>
+        </div>
+        <div>
+            <label for="backNumber" th:text="#{label.teamMember.backNumber}">backNumber</label>
+            <input type="backNumber" id="backNumber" name="backNumber" class="form-control" value="100"
+                   th:errorclass="field-error"
+                   th:value="${createTeamForm.backNumber}">
+            <div class="field-error" th:errors="*{backNumber}">
+                backNumber 오류
+            </div>
+        </div>
 
         <hr class="my-4">
 

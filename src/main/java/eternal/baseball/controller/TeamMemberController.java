@@ -3,9 +3,13 @@ package eternal.baseball.controller;
 
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.Member;
 import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
+import eternal.baseball.dto.member.MemberDTO;
+import eternal.baseball.dto.team.TeamDTO;
+import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
+import eternal.baseball.dto.teamMember.TeamMemberDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
 import eternal.baseball.global.extension.AlertMessage;
@@ -49,23 +53,26 @@ public class TeamMemberController {
     /**
      * 팀 가입 페이지
      */
-    @GetMapping("/joinTeam/{teamId}")
-    public String joinTeamForm(@PathVariable Long teamId, Model model, HttpServletRequest request) {
+    @GetMapping("/joinTeam/{teamCode}")
+    public String joinTeamForm(@PathVariable String teamCode, Model model, HttpServletRequest request) {
 
-        Member loginMember = getLoginMember(request);
-        Team joinTeam = teamService.findTeam(teamId);
+        MemberDTO loginMember = getLoginMember(request);
+        TeamDTO joinTeam = teamService.findTeam(teamCode);
 
-        Boolean joinCheck = teamMemberService.joinTeamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamId());
+        Boolean joinCheck = teamMemberService.joinTeamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamCode());
         log.info("[joinTeamForm] joinCheck={}", joinCheck);
         if (joinCheck) {
             log.info("[joinTeamForm] 이미 팀에 가입된 선수");
-            String redirectURI = "/team/" + teamId;
+            String redirectURI = "/team/" + teamCode;
             AlertMessage message = new AlertMessage("이미 팀에 가입되어 있습니다", redirectURI);
             model.addAttribute("message", message);
             return "template/alert";
         }
 
-        JoinTeamMemberDto joinTeamMemberDto = new JoinTeamMemberDto(loginMember, joinTeam);
+        JoinTeamMemberDto joinTeamMemberDto = JoinTeamMemberDto.builder()
+                .teamName(joinTeam.getTeamName())
+                .memberName(loginMember.getName())
+                .build();
         model.addAttribute("joinTeamMemberDto", joinTeamMemberDto);
 
         return "teamMember/joinTeamMemberForm";
@@ -74,8 +81,8 @@ public class TeamMemberController {
     /**
      * 팀 가입
      */
-    @PostMapping("/joinTeam/{teamId}")
-    public String joinTeam(@PathVariable Long teamId,
+    @PostMapping("/joinTeam/{teamCode}")
+    public String joinTeam(@PathVariable String teamCode,
                            @Validated @ModelAttribute("joinTeamMemberDto") JoinTeamMemberDto joinTeamMemberDto,
                            BindingResult bindingResult,
                            HttpServletRequest request) {
@@ -86,29 +93,21 @@ public class TeamMemberController {
         }
 
         log.info("[joinTeam] joinTeamMemberDto={}", joinTeamMemberDto);
+        MemberDTO loginMember = getLoginMember(request);
 
-        Member loginMember = getLoginMember(request);
-        Team joinTeam = teamService.findTeam(teamId);
+        RequestTeamMemberDTO requestDTO = RequestTeamMemberDTO.builder()
+                .teamCode(teamCode)
+                .member(loginMember)
+                .teamMemberShip(TeamMemberShip.PLAYER)
+                .mainPositionEng(joinTeamMemberDto.getMainPosition())
+                .backNumber(joinTeamMemberDto.getBackNumber())
+                .build();
 
-        Boolean joinCheck = teamMemberService.joinTeamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamId());
-        log.info("[joinTeam] joinCheck={}", joinCheck);
-        if (joinCheck) {
-            log.info("[joinTeam] 이미 팀에 가입된 선수");
-            return "redirect:/team/" + teamId;
-        }
+        ResponseDataDTO<TeamMemberDTO> responseDTO = teamMemberService.joinTeamMember(requestDTO);
 
-        Boolean backNumberCheck = teamMemberService.duplicateBackNumberCheck(teamId, joinTeamMemberDto.getBackNumber());
-        log.info("[joinTeam] backNumberCheck={}", backNumberCheck);
-        if (backNumberCheck) {
-            bindingResult.rejectValue("backNumber", "sameBackNumber", "이미 사용중인 번호입니다");
-            return "teamMember/joinTeamMemberForm";
-        }
-
-        TeamMember teamMember = new TeamMember(loginMember, joinTeam, joinTeamMemberDto);
-        teamMemberService.joinTeamMember(teamMember);
-        log.info("[joinTeam] teamMember={}", teamMember);
-
-        Long teamMemberId = teamMember.getTeamMemberId();
+        TeamMemberDTO teamMemberDTO = responseDTO.getData();
+        Long teamMemberId = teamMemberDTO.getTeamMemberId();
+        log.info("[joinTeam] teamMember={}", teamMemberDTO);
 
         return "redirect:/teamMember/" + teamMemberId;
     }
@@ -122,7 +121,7 @@ public class TeamMemberController {
                                        HttpServletRequest request) {
 
         TeamMember teamMember = teamMemberService.findTeamMember(teamMemberId);
-        Member loginMember = getLoginMember(request);
+        MemberDTO loginMember = getLoginMember(request);
 
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
 
@@ -168,7 +167,7 @@ public class TeamMemberController {
                                    Model model) {
 
         TeamMember teamMember = teamMemberService.findTeamMember(teamMemberId);
-        Member loginMember = getLoginMember(request);
+        MemberDTO loginMember = getLoginMember(request);
 
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
 
@@ -221,9 +220,9 @@ public class TeamMemberController {
         return teamMemberShips;
     }
 
-    private static Member getLoginMember(HttpServletRequest request) {
+    private static MemberDTO getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
     @ModelAttribute("positions")

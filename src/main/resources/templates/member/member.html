@@ -64,9 +64,9 @@
             </thead>
             <tbody>
             <tr th:each="teamMember : ${teamMemberList}">
-                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${teamMember.team.teamId})}"
+                <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${teamMember.team.teamCode})}"
                        th:text="${teamMember.team.teamName}">팀</a></td>
-                <td><a href="team.html" th:href="@{/team/{teamId}(teamId=${teamMember.team.teamId})}"
+                <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${teamMember.team.teamCode})}"
                        th:text="${teamMember.team.teamCode}">팀 코드</a></td>
                 <td th:text="${teamMember.memberShip.description}">선수 분류</td>
                 <td th:text="${teamMember.mainPosition.description}">메인 포지션</td>
