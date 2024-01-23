@@ -2,12 +2,12 @@ package eternal.baseball.controller;
 
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.team.CreateTeamDTO;
 import eternal.baseball.dto.team.TeamDTO;
 import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
+import eternal.baseball.dto.teamMember.TeamMemberDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.service.TeamMemberService;
@@ -39,7 +39,7 @@ public class TeamController {
      */
     @GetMapping("/teams")
     public String teams(Model model) {
-        List<Team> teams = teamService.findTeams();
+        List<TeamDTO> teams = teamService.findTeams();
         model.addAttribute("teams", teams);
         return "team/teams";
     }
@@ -70,6 +70,7 @@ public class TeamController {
         log.info("[createTeam] loginMember={}", loginMember);
         log.info("[createTeam] createTeamDTO={}", createTeamDTO);
 
+        // 팀 생성
         ResponseDataDTO<TeamDTO> response = teamService.createTeam(createTeamDTO, loginMember);
 
         if (response.isError()) {
@@ -97,6 +98,7 @@ public class TeamController {
                 .backNumber(createTeamDTO.getBackNumber())
                 .build();
 
+        // 구단주로 팀에 가입
         teamMemberService.joinTeamMember(teamMemberDTO);
         log.info("[createTeam] teamMember={}", teamMemberDTO);
 
@@ -110,14 +112,14 @@ public class TeamController {
     public String team(@PathVariable String teamCode, Model model, HttpServletRequest request) {
 
         TeamDTO team = teamService.findTeam(teamCode);
-        List<TeamMember> teamMembers = teamMemberService.findTeamMembers(teamCode);
 
+        List<TeamMemberDTO> teamMembers = teamMemberService.findTeamMembers2(teamCode);
         MemberDTO loginMemberDTO = getLoginMember(request);
         log.info("[team] loginMember={}", loginMemberDTO);
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
-
+        TeamMemberDTO loginTeamMember = teamMemberService.findTeamMember2(loginMemberDTO.getMemberId(), teamCode);
         log.info("[team] loginTeamMember={}", loginTeamMember);
+
         if (loginTeamMember != null && loginTeamMember.getMemberShip().getGrade() < TeamMemberShip.COACH.getGrade()) {
             model.addAttribute("manage", true);
             log.info("[team] can manage!!");

@@ -6,14 +6,17 @@ import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.Lineup;
 import eternal.baseball.domain.TeamMember;
+import eternal.baseball.dto.lineup.LineupDTO;
+import eternal.baseball.dto.member.MemberDTO;
+import eternal.baseball.dto.player.PlayerDTO;
+import eternal.baseball.repository.TeamMemberRepository;
 import eternal.baseball.repository.TeamRepository;
 import eternal.baseball.service.LineupService;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
 import eternal.baseball.global.extension.AlertMessage;
 import eternal.baseball.dto.lineup.LineupChangeCard;
-import eternal.baseball.dto.lineup.LineupFormDto;
-import eternal.baseball.dto.lineup.PlayerDto;
+import eternal.baseball.dto.lineup.LineupFormDTO;
 import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,13 +45,14 @@ public class LineupController {
     private final LineupService lineupService;
 
     private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     /**
      * 라인업 상세 페이지
      */
     @GetMapping("/{teamCode}/{lineupId}")
     public String lineup(@PathVariable String teamCode, @PathVariable Long lineupId, Model model) {
-        Lineup lineup = lineupService.findLineup(lineupId);
+        LineupDTO lineup = lineupService.findLineup2(lineupId);
         model.addAttribute("lineup", lineup);
         return "lineup/lineup";
     }
@@ -69,7 +73,7 @@ public class LineupController {
      */
     @GetMapping("/{teamCode}/create")
     public String writeLineupForm(@PathVariable String teamCode,
-                                  @ModelAttribute("lineupForm") LineupFormDto lineupForm,
+                                  @ModelAttribute("lineupForm") LineupFormDTO lineupForm,
                                   @ModelAttribute("errCode") String errCode,
                                   @ModelAttribute("errMessage") String errMessage,
                                   @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
@@ -88,7 +92,7 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
@@ -108,7 +112,7 @@ public class LineupController {
                 return "template/alert";
             }
 
-            lineupForm = new LineupFormDto(teamMembers);
+            lineupForm = new LineupFormDTO(teamMembers);
         }
 
         lineupChangeCard = new LineupChangeCard();
@@ -145,14 +149,14 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDTO lineupForm = (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         List<Boolean> trueList = lineupChangeCard.isTrueList();
         lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
-        ArrayList<PlayerDto> startingPlayers = lineupForm.getStartingPlayers();
-        ArrayList<PlayerDto> benchPlayers = lineupForm.getBenchPlayers();
+        ArrayList<PlayerDTO> startingPlayers = lineupForm.getStartingPlayers();
+        ArrayList<PlayerDTO> benchPlayers = lineupForm.getBenchPlayers();
 
-        PlayerDto player1 = null;
+        PlayerDTO player1 = null;
         int player1OrderIndex = 0;
         for (Boolean tf : trueList) {
             if (tf) {
@@ -174,7 +178,7 @@ public class LineupController {
             return "redirect:" + redirectURI;
         }
 
-        PlayerDto player2 = null;
+        PlayerDTO player2 = null;
         int player2OrderIndex = 0;
         for (int i = player1OrderIndex + 1; i < 9; i++) {
             if (trueList.get(i)) {
@@ -202,10 +206,10 @@ public class LineupController {
         log.info("[changeOrder] player1={}", player1);
         log.info("[changeOrder] player2={}", player2);
 
-        String player1Position = player1.getPosition();
+        Position player1Position = player1.getPosition();
         Integer player1OrderNum = player1.getOrderNum();
 
-        String player2Position = player2.getPosition();
+        Position player2Position = player2.getPosition();
         Integer player2OrderNum = player2.getOrderNum();
 
         player2.setPosition(player1Position);
@@ -253,14 +257,14 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDTO lineupForm = (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         List<Boolean> trueList = lineupChangeCard.isTrueList();
         log.info("[changePosition] lineupForm={}", lineupForm);
         lineupForm.setLineupName(lineupChangeCard.getLineupName());
 
-        ArrayList<PlayerDto> startingPlayers = lineupForm.getStartingPlayers();
+        ArrayList<PlayerDTO> startingPlayers = lineupForm.getStartingPlayers();
 
-        PlayerDto player1 = null;
+        PlayerDTO player1 = null;
         int player1OrderIndex = 0;
         for (Boolean tf : trueList) {
             if (tf) {
@@ -282,7 +286,7 @@ public class LineupController {
             return "redirect:" + redirectURI;
         }
 
-        PlayerDto player2 = null;
+        PlayerDTO player2 = null;
         int player2OrderIndex = 0;
         for (int i = player1OrderIndex + 1; i < 9; i++) {
             if (trueList.get(i)) {
@@ -307,8 +311,8 @@ public class LineupController {
         log.info("[changePosition] player1={}", player1);
         log.info("[changePosition] player2={}", player2);
 
-        String player1Position = player1.getPosition();
-        String player2Position = player2.getPosition();
+        Position player1Position = player1.getPosition();
+        Position player2Position = player2.getPosition();
 
         player1.setPosition(player2Position);
         player2.setPosition(player1Position);
@@ -340,7 +344,7 @@ public class LineupController {
                               Model model) {
 
         log.info("[writeLineup] lineupChangeCard={}", lineupChangeCard);
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDTO lineupForm = (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         if (bindingResult.hasErrors()) {
             model.addAttribute("lineupForm", lineupForm);
             model.addAttribute("lineupChangeCard", lineupChangeCard);
@@ -349,7 +353,7 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
         log.info("[writeLineup] lineupForm={}", lineupForm);
 
         Lineup lineup = new Lineup();
@@ -363,7 +367,7 @@ public class LineupController {
 
         log.info("[writeLineup] loginTeamMember={}", loginTeamMember);
 
-        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode));
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -382,7 +386,7 @@ public class LineupController {
     @GetMapping("/{teamCode}/{lineupId}/edit")
     public String editLineupForm(@PathVariable String teamCode,
                                  @PathVariable Long lineupId,
-                                 @ModelAttribute("lineupForm") LineupFormDto lineupForm,
+                                 @ModelAttribute("lineupForm") LineupFormDTO lineupForm,
                                  @ModelAttribute("errCode") String errCode,
                                  @ModelAttribute("errMessage") String errMessage,
                                  @ModelAttribute("lineupChangeCard") LineupChangeCard lineupChangeCard,
@@ -401,7 +405,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
@@ -423,7 +427,7 @@ public class LineupController {
 
             Lineup lineup = lineupService.findLineup(lineupId);
 
-            lineupForm = new LineupFormDto(lineup);
+            lineupForm = new LineupFormDTO(lineup);
             log.info("[editLineupForm] new lineupForm={}", lineupForm);
 
         }
@@ -456,7 +460,7 @@ public class LineupController {
                              HttpServletRequest request,
                              Model model) {
 
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDTO lineupForm = (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         log.info("[editLineup] lineupForm={}", lineupForm);
 
         if (bindingResult.hasErrors()) {
@@ -468,7 +472,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -479,7 +483,7 @@ public class LineupController {
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         lineup.setLineupId(lineupId);
-        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode));
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -503,7 +507,7 @@ public class LineupController {
                                         HttpServletRequest request,
                                         Model model) {
 
-        LineupFormDto lineupForm = (LineupFormDto) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
+        LineupFormDTO lineupForm = (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
         log.info("[saveAsDifferentLineup] lineupForm={}", lineupForm);
         if (bindingResult.hasErrors()) {
             model.addAttribute("lineupId", lineupId);
@@ -514,7 +518,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -524,7 +528,7 @@ public class LineupController {
 
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
-        lineup.setTeam(teamRepository.findByTeamCode(teamCode).get());
+        lineup.setTeam(teamRepository.findByTeamCode(teamCode));
         lineup.setWriter(loginTeamMember);
         lineup.setStarting(starting);
         lineup.setBench(bench);
@@ -546,7 +550,7 @@ public class LineupController {
                                HttpServletRequest request,
                                Model model) {
 
-        Member loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
         Lineup lineup = lineupService.findLineup(lineupId);
 
@@ -580,17 +584,17 @@ public class LineupController {
         return lineupNumber;
     }
 
-    private static Member getLoginMember(HttpServletRequest request) {
+    private static MemberDTO getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        return (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
-    public ArrayList<Player> getStarting(LineupFormDto lineupFormDto) {
+    public ArrayList<Player> getStarting(LineupFormDTO lineupFormDTO) {
 
-        ArrayList<PlayerDto> startingPlayers = lineupFormDto.getStartingPlayers();
+        ArrayList<PlayerDTO> startingPlayers = lineupFormDTO.getStartingPlayers();
 
         ArrayList<Player> starting = (ArrayList<Player>) startingPlayers.stream()
-                .map(p -> new Player(teamMemberService.findTeamMember(p.getTeamMemberId()), Position.fromDescription(p.getPosition()), p.getOrderNum()))
+                .map(p -> new Player(teamMemberRepository.findByTeamMemberId(p.getTeamMember().getTeamMemberId()), p.getPosition(), p.getOrderNum()))
                 .collect(Collectors.toList());
 
         log.info("[getStarting] starting={}", starting);
@@ -598,12 +602,26 @@ public class LineupController {
         return starting;
     }
 
-    public ArrayList<Player> getBench(LineupFormDto lineupFormDto) {
+    // 필요가 없네...?
+//    public ArrayList<PlayerDTO> getStarting2(LineupFormDTO lineupFormDTO) {
+//
+//        ArrayList<PlayerDTO> startingPlayers = lineupFormDTO.getStartingPlayers();
+//
+//        ArrayList<PlayerDTO> starting = (ArrayList<PlayerDTO>) startingPlayers.stream()
+//                .map(p -> PlayerDTO.from(p))
+//                .collect(Collectors.toList());
+//
+//        log.info("[getStarting] starting={}", starting);
+//
+//        return starting;
+//    }
 
-        ArrayList<PlayerDto> benchPlayers = lineupFormDto.getBenchPlayers();
+    public ArrayList<Player> getBench(LineupFormDTO lineupFormDto) {
+
+        ArrayList<PlayerDTO> benchPlayers = lineupFormDto.getBenchPlayers();
 
         ArrayList<Player> bench = (ArrayList<Player>) benchPlayers.stream()
-                .map(p -> new Player(teamMemberService.findTeamMember(p.getTeamMemberId()), Position.fromDescription(p.getPosition()), p.getOrderNum()))
+                .map(p -> new Player(teamMemberRepository.findByTeamMemberId(p.getTeamMember().getTeamMemberId()), p.getPosition(), p.getOrderNum()))
                 .collect(Collectors.toList());
 
         log.info("[getBench] bench={}", bench);

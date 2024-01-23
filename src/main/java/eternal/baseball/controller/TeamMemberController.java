@@ -1,6 +1,7 @@
 package eternal.baseball.controller;
 
 
+import eternal.baseball.domain.Member;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
 import eternal.baseball.domain.Team;
@@ -44,7 +45,7 @@ public class TeamMemberController {
     @GetMapping("{teamMemberId}")
     public String teamMember(@PathVariable Long teamMemberId, Model model) {
 
-        TeamMember teamMember = teamMemberService.findTeamMember(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
         model.addAttribute("teamMember", teamMember);
 
         return "teamMember/teamMember";
@@ -120,17 +121,18 @@ public class TeamMemberController {
                                        Model model,
                                        HttpServletRequest request) {
 
-        TeamMember teamMember = teamMemberService.findTeamMember(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
         MemberDTO loginMember = getLoginMember(request);
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
+        TeamMemberDTO loginTeamMember =
+                teamMemberService.findTeamMember2(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
 
         Integer loginTeamMemberGrade = loginTeamMember.getMemberShip().getGrade();
 
         log.info("[manageTeamMemberForm] teamMember != loginTeamMember ={}", teamMember != loginTeamMember);
 
         if (teamMember != loginTeamMember && loginTeamMemberGrade > teamMember.getMemberShip().getGrade()) {
-            String redirectURI = "/team/" + teamMember.getTeam().getTeamId();
+            String redirectURI = "/team/" + teamMember.getTeam().getTeamCode();
             AlertMessage message = new AlertMessage("수정하려는 대상의 권한이 더 높습니다", redirectURI);
             model.addAttribute("message", message);
             log.info("[manageTeamMemberForm] AlertMessage redirectURI={}", redirectURI);
@@ -145,7 +147,7 @@ public class TeamMemberController {
             teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
         }
 
-        EditTeamMemberDto editTeamMemberDto = new EditTeamMemberDto(teamMember);
+        EditTeamMemberDto editTeamMemberDto = EditTeamMemberDto.from(teamMember);
 
         log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
 
@@ -166,10 +168,11 @@ public class TeamMemberController {
                                    HttpServletRequest request,
                                    Model model) {
 
-        TeamMember teamMember = teamMemberService.findTeamMember(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
         MemberDTO loginMember = getLoginMember(request);
 
-        TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamId());
+        TeamMember loginTeamMember =
+                teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
 
         if (bindingResult.hasErrors()) {
             Integer loginMemberGrade = loginTeamMember.getMemberShip().getGrade();
@@ -186,28 +189,31 @@ public class TeamMemberController {
         //수정하려는 등급이 감독 이상일 때
         //기존 감독이나 오너의 등급을 선수로 내린다
         if (teamMember.getMemberShip() != editTeamMemberShip && editTeamMemberShip.getGrade() <= TeamMemberShip.MANAGER.getGrade()) {
-            TeamMember highTeamMember = teamMemberService.findTeamMembers(teamMember.getTeam().getTeamId()).stream()
+            TeamMemberDTO highTeamMember = teamMemberService.findTeamMembers2(teamMember.getTeam().getTeamCode()).stream()
                     .filter(tm -> tm.getMemberShip().equals(editTeamMemberShip))
                     .findFirst()
                     .orElse(null);
 
             if (highTeamMember != null) {
                 if (editTeamMemberShip.getGrade().equals(TeamMemberShip.OWNER.getGrade())) {
-                    Team team = teamMember.getTeam();
-                    team.setOwner(teamMember.getMember());
-                    teamService.editTeam(teamMember.getTeam().getTeamId(), team);
+                    TeamDTO team = teamMember.getTeam();
+                    MemberDTO member = teamMember.getMember();
+                    teamService.changeOwner(team.getTeamCode(), member);
                     log.info("[manageTeamMember] change Owner={}", team.getOwner());
                 }
 
                 highTeamMember.setMemberShip(TeamMemberShip.PLAYER);
-                teamMemberService.editTeamMember(highTeamMember.getTeamMemberId(), highTeamMember);
+                teamMemberService.editTeamMember(highTeamMember);
                 log.info("[manageTeamMember] change teamMemberShip={}", highTeamMember.getMember().getName());
             }
         }
 
-        TeamMember editTeamMember = new TeamMember(teamMember, editTeamMemberDto);
-        teamMemberService.editTeamMember(teamMemberId, editTeamMember);
-        log.info("[manageTeamMember] edit teamMember={}", editTeamMember);
+        teamMember.setMemberShip(TeamMemberShip.fromDescription(editTeamMemberDto.getTeamMemberShip()));
+        teamMember.setMainPosition(Position.fromDescription(editTeamMemberDto.getMainPosition()));
+        teamMember.setBackNumber(editTeamMemberDto.getBackNumber());
+
+        teamMemberService.editTeamMember(teamMember);
+        log.info("[manageTeamMember] edit teamMember={}", teamMember);
 
         return "redirect:/teamMember/" + teamMemberId;
     }

@@ -14,7 +14,8 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,16 +62,9 @@ public class TeamService {
 
         teamRepository.save(team);
 
-        //teamMember 추가
-
-
-
         return ResponseDataDTO.<TeamDTO>builder()
-                .data(TeamDTO.builder()
-                        .teamName(team.getTeamName())
-                        .teamCode(team.getTeamCode())
-                        .owner(owner)
-                        .build())
+                .error(false)
+                .data(TeamDTO.from(team))
                 .build();
     }
 
@@ -82,17 +76,42 @@ public class TeamService {
     }
 
     /**
-     * 팀 ID로 team 찾기
+     * 구단주 교체
      */
-    public Team findTeam2(Long teamId) {
-        return teamRepository.findByTeamId(teamId);
+    public ResponseDataDTO<TeamDTO> changeOwner(String teamCode, MemberDTO newOwnerDTO) {
+
+        List<BindingErrorDTO> bindingErrors = new ArrayList<>();
+
+        Optional<Long> teamId = teamRepository.findTeamIdByTeamCode(teamCode);
+
+        if (teamId.isEmpty()) {
+            BindingErrorDTO bindingError = BindingErrorDTO.builder()
+                    .errorCode("missMatchTeamCode")
+                    .errorMessage("일치하는 팀 코드가 존재하지 않습니다")
+                    .build();
+
+            bindingErrors.add(bindingError);
+
+            return ResponseDataDTO.<TeamDTO>builder()
+                    .error(true)
+                    .bindingErrors(bindingErrors)
+                    .build();
+        }
+
+        Team team = teamRepository.findByTeamId(teamId.get());
+        team.setOwner(memberRepository.findByMemberId(newOwnerDTO.getMemberId()));
+
+        teamRepository.edit(team.getTeamId(), team);
+
+        return ResponseDataDTO.<TeamDTO>builder()
+                .error(false)
+                .data(TeamDTO.from(team))
+                .build();
     }
 
-    public TeamDTO findTeam1(Long teamId) {
-        Team team = teamRepository.findByTeamId(teamId);
-        return new TeamDTO(team);
-    }
-
+    /**
+     * 팀 코드로 team 찾기
+     */
     public TeamDTO findTeam(String teamCode) {
         Team team = teamRepository.findAll().stream()
                 .filter(t -> t.getTeamCode().equals(teamCode))
@@ -102,37 +121,16 @@ public class TeamService {
         if (team == null) {
             return null;
         }
-        return TeamDTO.builder()
-                .owner(MemberDTO.builder()
-                        .memberId(team.getOwner().getMemberId())
-                        .loginId(team.getOwner().getLoginId())
-                        .name(team.getOwner().getName())
-                        .birthday(team.getOwner().getBirthday())
-                        .build())
-                .teamCode(teamCode)
-                .teamName(team.getTeamName())
-                .build();
+
+        return TeamDTO.from(team);
     }
 
     /**
      * 모든 team 찾기
      */
-    public List<Team> findTeams() {
-        return teamRepository.findAll();
+    public List<TeamDTO> findTeams() {
+        return teamRepository.findAll().stream()
+                .map(TeamDTO::from)
+                .collect(Collectors.toList());
     }
-
-    /**
-     * 팀명 유무 검증
-     */
-    public Boolean duplicateTeamNameCheck(String teamName) {
-        return !ObjectUtils.isEmpty(teamRepository.findByTeamName(teamName));
-    }
-
-    /**
-     * 팀 코드 유무 검증
-     */
-    public Boolean duplicateTeamCodeCheck(String teamCode) {
-        return !ObjectUtils.isEmpty(teamRepository.findByTeamCode(teamCode));
-    }
-
 }

@@ -3,8 +3,6 @@ package eternal.baseball.service;
 import eternal.baseball.domain.Member;
 import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
-import eternal.baseball.domain.custom.Position;
-import eternal.baseball.dto.team.TeamDTO;
 import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
@@ -17,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,19 +52,10 @@ public class TeamMemberService {
         }
 
         Member member = memberRepository.findByMemberId(requestMember.getMember().getMemberId());
-        Team team = teamRepository.findByTeamCode(requestMember.getTeamCode()).get();
-        TeamDTO teamDTO = teamService.findTeam(requestMember.getTeamCode());
-
+        Team team = teamRepository.findByTeamCode(requestMember.getTeamCode());
         TeamMember teamMember = teamMemberRepository.save(requestMember.toEntity(member, team));
 
-        TeamMemberDTO teamMemberDTO = TeamMemberDTO.builder()
-                .teamMemberId(teamMember.getTeamMemberId())
-                .member(requestMember.getMember())
-                .team(teamDTO)
-                .memberShip(requestMember.getTeamMemberShip())
-                .mainPosition(Position.fromEng(requestMember.getMainPositionEng()))
-                .backNumber(requestMember.getBackNumber())
-                .build();
+        TeamMemberDTO teamMemberDTO = TeamMemberDTO.from(teamMember);
 
         return ResponseDataDTO.<TeamMemberDTO>builder()
                 .error(false)
@@ -76,8 +66,14 @@ public class TeamMemberService {
     /**
      * 팀원 정보 수정
      */
-    public TeamMember editTeamMember(Long teamMemberId, TeamMember teamMember) {
-        return teamMemberRepository.edit(teamMemberId, teamMember);
+    public TeamMemberDTO editTeamMember(TeamMemberDTO teamMember) {
+        Team team = teamRepository.findByTeamCode(teamMember.getTeam().getTeamCode());
+        Member member = memberRepository.findByMemberId(teamMember.getMember().getMemberId());
+
+        TeamMember editTeamMember = teamMember.toEntity(team, member);
+        teamMemberRepository.edit(teamMember.getTeamMemberId(), editTeamMember);
+
+        return TeamMemberDTO.from(editTeamMember);
     }
 
     /**
@@ -93,6 +89,14 @@ public class TeamMemberService {
 
     public TeamMember findTeamMember(Long memberId, String teamCode) {
         return teamMemberRepository.findByMemberIdTeamCode(memberId, teamCode);
+    }
+
+    public TeamMemberDTO findTeamMember2(Long teamMemberId) {
+        return TeamMemberDTO.from(teamMemberRepository.findByTeamMemberId(teamMemberId));
+    }
+
+    public TeamMemberDTO findTeamMember2(Long memberId, String teamCode) {
+        return TeamMemberDTO.from(teamMemberRepository.findByMemberIdTeamCode(memberId, teamCode));
     }
 
     /**
@@ -118,6 +122,12 @@ public class TeamMemberService {
 
     public ArrayList<TeamMember> findTeamMembers(String teamCode) {
         return teamMemberRepository.findByTeamCode(teamCode);
+    }
+
+    public List<TeamMemberDTO> findTeamMembers2(String teamCode) {
+        return teamMemberRepository.findByTeamCode(teamCode).stream()
+                .map(TeamMemberDTO::from)
+                .collect(Collectors.toList());
     }
 
     /**

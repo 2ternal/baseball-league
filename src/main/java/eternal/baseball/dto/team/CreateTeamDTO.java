@@ -1,11 +1,15 @@
 package eternal.baseball.dto.team;
 
 import eternal.baseball.domain.Team;
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.*;
 
-@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateTeamDTO {
 
     @NotEmpty

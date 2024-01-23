@@ -16,14 +16,11 @@ public class TeamDTO {
     private String teamCode;
     private MemberDTO owner;
 
-    public TeamDTO(Team team) {
-        this.teamName = team.getTeamName();
-        this.teamCode = team.getTeamCode();
-        this.owner = MemberDTO.builder()
-                .memberId(team.getOwner().getMemberId())
-                .loginId(team.getOwner().getLoginId())
-                .name(team.getOwner().getName())
-                .birthday(team.getOwner().getBirthday())
+    public static TeamDTO from(Team team) {
+        return TeamDTO.builder()
+                .teamName(team.getTeamName())
+                .teamCode(team.getTeamCode())
+                .owner(MemberDTO.from(team.getOwner()))
                 .build();
     }
 }

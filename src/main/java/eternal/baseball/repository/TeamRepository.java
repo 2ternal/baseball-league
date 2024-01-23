@@ -47,10 +47,21 @@ public class TeamRepository {
     /**
      * 팀 코드로 team 찾기
      */
-    public Optional<Team> findByTeamCode(String teamCode) {
+    public Team findByTeamCode(String teamCode) {
         return findAll().stream()
                 .filter(m -> m.getTeamCode().equals(teamCode))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * 팀 코드로 teamId 찾기
+     */
+    public Optional<Long> findTeamIdByTeamCode(String teamCode) {
+        return findAll().stream()
+                .filter(m -> m.getTeamCode().equals(teamCode))
+                .findFirst()
+                .map(Team::getTeamId);
     }
 
     public List<Team> findAll() {

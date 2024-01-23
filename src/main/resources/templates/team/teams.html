@@ -24,16 +24,15 @@
         <table class="table">
             <thead>
             <tr>
-                <th th:text="#{label.team.teamId}">팀 ID</th>
+                <th th:text="#{label.listOrder}">넘버링</th>
                 <th th:text="#{label.team.teamName}">팀명</th>
                 <th th:text="#{label.team.teamCode}">팀 코드</th>
                 <th th:text="#{label.team.owner}">구단주</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="team : ${teams}">
-                <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${team.teamCode})}"
-                       th:text="${team.teamId}">팀 ID</a></td>
+            <tr th:each="team, teamStat : ${teams}">
+                <td th:text="${teamStat.count}">넘버링</td>
                 <td><a href="team.html" th:href="@{/team/{teamCode}(teamCode=${team.teamCode})}"
                        th:text="${team.teamName}">팀명</a></td>
                 <td th:text="${team.teamCode}">팀 코드</td>

@@ -1,6 +1,7 @@
 package eternal.baseball.service;
 
 import eternal.baseball.domain.Lineup;
+import eternal.baseball.dto.lineup.LineupDTO;
 import eternal.baseball.repository.LineupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,10 @@ public class LineupService {
      */
     public Lineup findLineup(Long lineupId) {
         return lineupRepository.findByLineupId(lineupId);
+    }
+
+    public LineupDTO findLineup2(Long lineupId) {
+        return LineupDTO.from(lineupRepository.findByLineupId(lineupId));
     }
 
     /**
