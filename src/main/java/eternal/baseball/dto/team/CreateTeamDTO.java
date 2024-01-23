@@ -18,7 +18,7 @@ public class CreateTeamDTO {
     @NotEmpty
     private String teamCode;
     @NotEmpty
-    private String mainPositionEng;
+    private String mainPosition;
     @Min(value = 0)
     @Max(value = 130)
     @NotNull

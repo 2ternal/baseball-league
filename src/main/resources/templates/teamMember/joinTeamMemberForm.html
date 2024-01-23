@@ -22,23 +22,33 @@
         <h2 th:text="#{page.teamMember}">팀원 정보</h2>
     </div>
 
-    <form action="" th:action th:object="${joinTeamMemberDto}" method="post">
+    <form action="" th:action th:object="${joinTeamMember}" method="post">
         <div>
             <label for="teamName" th:text="#{label.teamMember.team}">teamName</label>
             <input type="text" id="teamName" name="teamName" class="form-control" value="aaa"
-                   th:value="${joinTeamMemberDto.teamName}" readonly>
+                   th:value="${joinTeamMember.teamName}" readonly>
+        </div>
+        <div>
+            <label for="teamCode" th:text="#{label.team.teamCode}">teamCode</label>
+            <input type="text" id="teamCode" name="teamCode" class="form-control" value="aaa"
+                   th:value="${joinTeamMember.teamCode}" readonly>
         </div>
         <div>
             <label for="memberName" th:text="#{label.member.name}">name</label>
             <input type="text" id="memberName" name="memberName" class="form-control" value="회원"
-                   th:value="${joinTeamMemberDto.memberName}" readonly>
+                   th:value="${joinTeamMember.memberName}" readonly>
+        </div>
+        <div>
+            <div th:text="#{label.teamMember.memberShip}">memberShip</div>
+            <input type="text" id="teamMemberShip" name="teamMemberShip" class="form-control" value="회원 등급"
+                   th:value="${joinTeamMember.teamMemberShip}" readonly>
         </div>
         <div>
             <div th:text="#{label.teamMember.mainPosition}">mainPosition</div>
             <select th:field="*{mainPosition}" class="form-select">
                 <option value="" selected>==포지션 선택==</option>
                 <option th:each="position : ${positions}"
-                        th:value="${position}"
+                        th:value="${position.description}"
                         th:text="${position.description}">position
                 </option>
             </select>
@@ -50,7 +60,7 @@
             <label for="backNumber" th:text="#{label.teamMember.backNumber}">backNumber</label>
             <input type="backNumber" id="backNumber" name="backNumber" class="form-control" value="100"
                    th:errorclass="field-error"
-                   th:value="${joinTeamMemberDto.backNumber}">
+                   th:value="${joinTeamMember.backNumber}">
             <div class="field-error" th:errors="*{backNumber}">
                 backNumber 오류
             </div>

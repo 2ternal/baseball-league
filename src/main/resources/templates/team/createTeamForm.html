@@ -43,14 +43,14 @@
         </div>
         <div>
             <div th:text="#{label.teamMember.mainPosition}">mainPosition</div>
-            <select th:field="*{mainPositionEng}" class="form-select">
+            <select th:field="*{mainPosition}" class="form-select">
                 <option value="" selected>==포지션 선택==</option>
                 <option th:each="position : ${positions}"
-                        th:value="${position}"
+                        th:value="${position.description}"
                         th:text="${position.description}">position
                 </option>
             </select>
-            <div class="field-error" th:errors="*{mainPositionEng}">
+            <div class="field-error" th:errors="*{mainPosition}">
                 mainPosition 오류
             </div>
         </div>

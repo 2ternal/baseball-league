@@ -3,20 +3,23 @@ package eternal.baseball.service;
 import eternal.baseball.domain.Member;
 import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
-import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
+import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
+import eternal.baseball.dto.teamMember.TeamMemberFormDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.repository.MemberRepository;
 import eternal.baseball.repository.TeamMemberRepository;
 import eternal.baseball.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeamMemberService {
@@ -29,12 +32,12 @@ public class TeamMemberService {
     /**
      * 새 팀원 추가
      */
-    public ResponseDataDTO<TeamMemberDTO> joinTeamMember(RequestTeamMemberDTO requestMember) {
+    public ResponseDataDTO<TeamMemberDTO> joinTeamMember(TeamMemberFormDTO joinTeamMember, MemberDTO loginMember) {
 
         List<BindingErrorDTO> bindingErrors = new ArrayList<>();
         // 등번호 중복 검증
-        if (teamMemberRepository.findByTeamCode(requestMember.getTeamCode()).stream()
-                .anyMatch(tm -> tm.getBackNumber().equals(requestMember.getBackNumber()))) {
+        if (teamMemberRepository.findByTeamCode(joinTeamMember.getTeamCode()).stream()
+                .anyMatch(tm -> tm.getBackNumber().equals(joinTeamMember.getBackNumber()))) {
             BindingErrorDTO bindingErrorDTO = BindingErrorDTO.builder()
                     .errorField("backNumber")
                     .errorCode("sameBackNumber")
@@ -51,9 +54,11 @@ public class TeamMemberService {
                     .build();
         }
 
-        Member member = memberRepository.findByMemberId(requestMember.getMember().getMemberId());
-        Team team = teamRepository.findByTeamCode(requestMember.getTeamCode());
-        TeamMember teamMember = teamMemberRepository.save(requestMember.toEntity(member, team));
+        Member member = memberRepository.findByMemberId(loginMember.getMemberId());
+        Team team = teamRepository.findByTeamCode(joinTeamMember.getTeamCode());
+        TeamMember teamMember = teamMemberRepository.save(joinTeamMember.toEntity(member, team));
+
+        log.info("[joinTeamMember service] teamMember={}", teamMember);
 
         TeamMemberDTO teamMemberDTO = TeamMemberDTO.from(teamMember);
 

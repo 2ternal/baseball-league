@@ -1,22 +1,19 @@
 package eternal.baseball.controller;
 
 
-import eternal.baseball.domain.Member;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.Team;
 import eternal.baseball.domain.TeamMember;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.team.TeamDTO;
-import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
+import eternal.baseball.dto.teamMember.TeamMemberFormDTO;
+import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
 import eternal.baseball.global.extension.AlertMessage;
 import eternal.baseball.global.constant.SessionConst;
-import eternal.baseball.dto.teamMember.EditTeamMemberDto;
-import eternal.baseball.dto.teamMember.JoinTeamMemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -70,11 +67,13 @@ public class TeamMemberController {
             return "template/alert";
         }
 
-        JoinTeamMemberDto joinTeamMemberDto = JoinTeamMemberDto.builder()
+        TeamMemberFormDTO joinTeamMember = TeamMemberFormDTO.builder()
                 .teamName(joinTeam.getTeamName())
+                .teamCode(teamCode)
                 .memberName(loginMember.getName())
+                .teamMemberShip(TeamMemberShip.PLAYER.getDescription())
                 .build();
-        model.addAttribute("joinTeamMemberDto", joinTeamMemberDto);
+        model.addAttribute("joinTeamMember", joinTeamMember);
 
         return "teamMember/joinTeamMemberForm";
     }
@@ -84,7 +83,7 @@ public class TeamMemberController {
      */
     @PostMapping("/joinTeam/{teamCode}")
     public String joinTeam(@PathVariable String teamCode,
-                           @Validated @ModelAttribute("joinTeamMemberDto") JoinTeamMemberDto joinTeamMemberDto,
+                           @Validated @ModelAttribute("joinTeamMember") TeamMemberFormDTO joinTeamMember,
                            BindingResult bindingResult,
                            HttpServletRequest request) {
 
@@ -92,25 +91,31 @@ public class TeamMemberController {
             log.info("bindingResult={}", bindingResult);
             return "teamMember/joinTeamMemberForm";
         }
+        log.info("[joinTeam] joinTeamMemberDto={}", joinTeamMember);
 
-        log.info("[joinTeam] joinTeamMemberDto={}", joinTeamMemberDto);
         MemberDTO loginMember = getLoginMember(request);
 
-        RequestTeamMemberDTO requestDTO = RequestTeamMemberDTO.builder()
-                .teamCode(teamCode)
-                .member(loginMember)
-                .teamMemberShip(TeamMemberShip.PLAYER)
-                .mainPositionEng(joinTeamMemberDto.getMainPosition())
-                .backNumber(joinTeamMemberDto.getBackNumber())
-                .build();
+        ResponseDataDTO<TeamMemberDTO> response = teamMemberService.joinTeamMember(joinTeamMember, loginMember);
 
-        ResponseDataDTO<TeamMemberDTO> responseDTO = teamMemberService.joinTeamMember(requestDTO);
+        if (response.isError()) {
+            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
+                if (bindingError.getErrorField().isEmpty()) {
+                    bindingResult.reject(bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                } else {
+                    bindingResult.rejectValue(bindingError.getErrorField(),
+                            bindingError.getErrorCode(),
+                            bindingError.getErrorMessage());
+                }
+            }
+            log.info("[joinTeam] bindingResult={}", bindingResult);
+            return "teamMember/joinTeamMemberForm";
+        }
 
-        TeamMemberDTO teamMemberDTO = responseDTO.getData();
-        Long teamMemberId = teamMemberDTO.getTeamMemberId();
+        TeamMemberDTO teamMemberDTO = response.getData();
         log.info("[joinTeam] teamMember={}", teamMemberDTO);
 
-        return "redirect:/teamMember/" + teamMemberId;
+        return "redirect:/teamMember/" + teamMemberDTO.getTeamMemberId();
     }
 
     /**
@@ -147,13 +152,13 @@ public class TeamMemberController {
             teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
         }
 
-        EditTeamMemberDto editTeamMemberDto = EditTeamMemberDto.from(teamMember);
+        TeamMemberFormDTO teamMemberForm = TeamMemberFormDTO.from(teamMember);
 
         log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
 
         model.addAttribute("teamMember", teamMember);
         model.addAttribute("teamMemberShips", teamMemberShips);
-        model.addAttribute("editTeamMemberDto", editTeamMemberDto);
+        model.addAttribute("teamMemberForm", teamMemberForm);
 
         return "teamMember/editTeamMemberForm";
     }
@@ -163,7 +168,7 @@ public class TeamMemberController {
      */
     @PostMapping("{teamMemberId}/manage")
     public String manageTeamMember(@PathVariable Long teamMemberId,
-                                   @Validated @ModelAttribute("editTeamMemberDto") EditTeamMemberDto editTeamMemberDto,
+                                   @Validated @ModelAttribute("teamMemberForm") TeamMemberFormDTO teamMemberForm,
                                    BindingResult bindingResult,
                                    HttpServletRequest request,
                                    Model model) {
@@ -184,7 +189,7 @@ public class TeamMemberController {
             return "teamMember/editTeamMemberForm";
         }
 
-        TeamMemberShip editTeamMemberShip = TeamMemberShip.fromDescription(editTeamMemberDto.getTeamMemberShip());
+        TeamMemberShip editTeamMemberShip = TeamMemberShip.fromDescription(teamMemberForm.getTeamMemberShip());
 
         //수정하려는 등급이 감독 이상일 때
         //기존 감독이나 오너의 등급을 선수로 내린다
@@ -208,9 +213,9 @@ public class TeamMemberController {
             }
         }
 
-        teamMember.setMemberShip(TeamMemberShip.fromDescription(editTeamMemberDto.getTeamMemberShip()));
-        teamMember.setMainPosition(Position.fromDescription(editTeamMemberDto.getMainPosition()));
-        teamMember.setBackNumber(editTeamMemberDto.getBackNumber());
+        teamMember.setMemberShip(TeamMemberShip.fromDescription(teamMemberForm.getTeamMemberShip()));
+        teamMember.setMainPosition(Position.fromDescription(teamMemberForm.getMainPosition()));
+        teamMember.setBackNumber(teamMemberForm.getBackNumber());
 
         teamMemberService.editTeamMember(teamMember);
         log.info("[manageTeamMember] edit teamMember={}", teamMember);

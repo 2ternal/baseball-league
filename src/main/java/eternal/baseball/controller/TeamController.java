@@ -2,12 +2,11 @@ package eternal.baseball.controller;
 
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.TeamMember;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.team.CreateTeamDTO;
 import eternal.baseball.dto.team.TeamDTO;
-import eternal.baseball.dto.teamMember.RequestTeamMemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
+import eternal.baseball.dto.teamMember.TeamMemberFormDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.service.TeamMemberService;
@@ -90,17 +89,18 @@ public class TeamController {
 
         TeamDTO teamDTO = response.getData();
 
-        RequestTeamMemberDTO teamMemberDTO = RequestTeamMemberDTO.builder()
+        TeamMemberFormDTO teamMemberFormDTO = TeamMemberFormDTO.builder()
+                .teamName(teamDTO.getTeamName())
                 .teamCode(teamDTO.getTeamCode())
-                .member(loginMember)
-                .teamMemberShip(TeamMemberShip.OWNER)
-                .mainPositionEng(createTeamDTO.getMainPositionEng())
+                .memberName(loginMember.getName())
+                .mainPosition(createTeamDTO.getMainPosition())
                 .backNumber(createTeamDTO.getBackNumber())
+                .teamMemberShip(TeamMemberShip.OWNER.getDescription())
                 .build();
+        log.info("[createTeam] teamMember={}", teamMemberFormDTO);
 
         // 구단주로 팀에 가입
-        teamMemberService.joinTeamMember(teamMemberDTO);
-        log.info("[createTeam] teamMember={}", teamMemberDTO);
+        teamMemberService.joinTeamMember(teamMemberFormDTO, loginMember);
 
         return "redirect:/team/teams";
     }
