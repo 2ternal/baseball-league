@@ -8,12 +8,11 @@ import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.team.TeamDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberFormDTO;
-import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
+import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
 import eternal.baseball.global.extension.AlertMessage;
-import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -23,7 +22,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +33,7 @@ public class TeamMemberController {
 
     private final TeamService teamService;
     private final TeamMemberService teamMemberService;
+    private final ControllerUtil controllerUtil;
 
     /**
      * 팀원 상세 페이지
@@ -54,7 +53,7 @@ public class TeamMemberController {
     @GetMapping("/joinTeam/{teamCode}")
     public String joinTeamForm(@PathVariable String teamCode, Model model, HttpServletRequest request) {
 
-        MemberDTO loginMember = getLoginMember(request);
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
         TeamDTO joinTeam = teamService.findTeam(teamCode);
 
         Boolean joinCheck = teamMemberService.joinTeamMemberCheck(loginMember.getMemberId(), joinTeam.getTeamCode());
@@ -93,21 +92,12 @@ public class TeamMemberController {
         }
         log.info("[joinTeam] joinTeamMemberDto={}", joinTeamMember);
 
-        MemberDTO loginMember = getLoginMember(request);
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
 
         ResponseDataDTO<TeamMemberDTO> response = teamMemberService.joinTeamMember(joinTeamMember, loginMember);
 
         if (response.isError()) {
-            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
-                if (bindingError.getErrorField().isEmpty()) {
-                    bindingResult.reject(bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                } else {
-                    bindingResult.rejectValue(bindingError.getErrorField(),
-                            bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                }
-            }
+            controllerUtil.convertBindingError(bindingResult, response.getBindingErrors());
             log.info("[joinTeam] bindingResult={}", bindingResult);
             return "teamMember/joinTeamMemberForm";
         }
@@ -127,34 +117,29 @@ public class TeamMemberController {
                                        HttpServletRequest request) {
 
         TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
-        MemberDTO loginMember = getLoginMember(request);
-
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
         TeamMemberDTO loginTeamMember =
                 teamMemberService.findTeamMember2(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
 
-        Integer loginTeamMemberGrade = loginTeamMember.getMemberShip().getGrade();
-
         log.info("[manageTeamMemberForm] teamMember != loginTeamMember ={}", teamMember != loginTeamMember);
 
-        if (teamMember != loginTeamMember && loginTeamMemberGrade > teamMember.getMemberShip().getGrade()) {
+        Integer loginTeamMemberGrade = loginTeamMember.getMemberShip().getGrade();
+        List<TeamMemberShip> teamMemberShips = new ArrayList<>();
+
+        if (teamMember.getMemberShip().getGrade() == 1) {
+            teamMemberShips.add(TeamMemberShip.OWNER);
+        } else if (teamMember == loginTeamMember || loginTeamMemberGrade <= teamMember.getMemberShip().getGrade()) {
+            teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
+        } else {
             String redirectURI = "/team/" + teamMember.getTeam().getTeamCode();
             AlertMessage message = new AlertMessage("수정하려는 대상의 권한이 더 높습니다", redirectURI);
             model.addAttribute("message", message);
             log.info("[manageTeamMemberForm] AlertMessage redirectURI={}", redirectURI);
             return "template/alert";
         }
-
-        List<TeamMemberShip> teamMemberShips = new ArrayList<>();
-
-        if (teamMember.getMemberShip().getGrade() == 1) {
-            teamMemberShips.add(TeamMemberShip.OWNER);
-        } else {
-            teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
-        }
+        log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
 
         TeamMemberFormDTO teamMemberForm = TeamMemberFormDTO.from(teamMember);
-
-        log.info("[manageTeamMemberForm] teamMemberShips={}", teamMemberShips);
 
         model.addAttribute("teamMember", teamMember);
         model.addAttribute("teamMemberShips", teamMemberShips);
@@ -174,7 +159,7 @@ public class TeamMemberController {
                                    Model model) {
 
         TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
-        MemberDTO loginMember = getLoginMember(request);
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
 
         TeamMember loginTeamMember =
                 teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
@@ -229,11 +214,6 @@ public class TeamMemberController {
             teamMemberShips.add(TeamMemberShip.fromGrade(i));
         }
         return teamMemberShips;
-    }
-
-    private static MemberDTO getLoginMember(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
     @ModelAttribute("positions")

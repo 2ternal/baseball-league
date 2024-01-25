@@ -1,11 +1,11 @@
 package eternal.baseball.controller;
 
 import eternal.baseball.dto.member.*;
-import eternal.baseball.dto.util.BindingErrorDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
+import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.MemberService;
 import eternal.baseball.domain.TeamMember;
 import eternal.baseball.service.TeamMemberService;
-import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -15,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +25,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final TeamMemberService teamMemberService;
+    private final ControllerUtil controllerUtil;
 
     /**
      * 회원 목록 페이지
@@ -62,14 +62,10 @@ public class MemberController {
             return "member/signUpMemberForm";
         }
 
-        ResponseMemberDTO response = memberService.signUp(signUpMember);
+        ResponseDataDTO<MemberDTO> response = memberService.signUp(signUpMember);
 
         if (response.isError()) {
-            for (BindingErrorDTO bindingErrorDTO : response.getBindingErrors()) {
-                bindingResult.rejectValue(bindingErrorDTO.getErrorField(),
-                        bindingErrorDTO.getErrorCode(),
-                        bindingErrorDTO.getErrorMessage());
-            }
+            controllerUtil.convertBindingError(bindingResult, response.getBindingErrors());
             log.info("[signUpMember] bindingResult={}", bindingResult);
             return "member/signUpMemberForm";
         }
@@ -100,7 +96,7 @@ public class MemberController {
     @GetMapping("/myPage")
     public String myPageForm(Model model, HttpServletRequest request) {
 
-        MemberDTO loginMember = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
         List<TeamMember> teamMemberList = teamMemberService.findByMemberId(loginMember.getMemberId());
 
         model.addAttribute("loginMember", loginMember);
@@ -118,7 +114,7 @@ public class MemberController {
                                  Model model) {
 
         if (editMember.getName() == null) {
-            MemberDTO member = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+            MemberDTO member = controllerUtil.getLoginMember(request);
             editMember = new EditMemberDTO(member);
             model.addAttribute("editMember", editMember);
             log.info("[editMemberForm] editMember={}", editMember);
@@ -140,25 +136,20 @@ public class MemberController {
             return "member/editMemberForm";
         }
 
-        MemberDTO sessionMember = (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+        MemberDTO sessionMember = controllerUtil.getLoginMember(request);
 
-        ResponseMemberDTO response = memberService.editMember(sessionMember, editMember);
+        ResponseDataDTO<MemberDTO> response = memberService.editMember(sessionMember, editMember);
 
         if (response.isError()) {
-            for (BindingErrorDTO bindingErrorDTO : response.getBindingErrors()) {
-                bindingResult.rejectValue(bindingErrorDTO.getErrorField(),
-                        bindingErrorDTO.getErrorCode(),
-                        bindingErrorDTO.getErrorMessage());
-            }
+            controllerUtil.convertBindingError(bindingResult, response.getBindingErrors());
             log.info("[editMember] bindingResult={}", bindingResult);
             return "member/editMemberForm";
         }
 
-        MemberDTO editSessionMemberDTO = response.getMember();
+        MemberDTO editSessionMemberDTO = response.getData();
         log.info("[editMember] editMember={}", editSessionMemberDTO);
 
-        HttpSession session = request.getSession();
-        session.setAttribute(SessionConst.LOGIN_MEMBER, editSessionMemberDTO);
+        controllerUtil.setLoginMember(request, editSessionMemberDTO);
 
         return "redirect:myPage";
     }

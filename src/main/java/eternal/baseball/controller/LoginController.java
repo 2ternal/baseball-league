@@ -1,11 +1,10 @@
 package eternal.baseball.controller;
 
 import eternal.baseball.dto.member.MemberDTO;
-import eternal.baseball.dto.member.ResponseMemberDTO;
-import eternal.baseball.dto.util.BindingErrorDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
+import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.LoginService;
 import eternal.baseball.dto.login.LoginDTO.*;
-import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -25,6 +24,7 @@ import javax.servlet.http.HttpSession;
 public class LoginController {
 
     private final LoginService loginService;
+    private final ControllerUtil controllerUtil;
 
     /**
      * 로그인 페이지
@@ -47,29 +47,18 @@ public class LoginController {
             return "login/loginForm";
         }
 
-        ResponseMemberDTO response = loginService.login(loginRequest);
+        ResponseDataDTO<MemberDTO> response = loginService.login(loginRequest);
 
         if (response.isError()) {
-            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
-                if (bindingError.getErrorField().isEmpty()) {
-                    bindingResult.reject(bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                } else {
-                    bindingResult.rejectValue(bindingError.getErrorField(),
-                            bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                }
-            }
+            controllerUtil.convertBindingError(bindingResult, response.getBindingErrors());
             log.info("[joinMember] bindingResult={}", bindingResult);
             return "login/loginForm";
         }
 
-        HttpSession session = request.getSession();
-        MemberDTO loginMember = response.getMember();
+        MemberDTO loginMember = response.getData();
         log.info("[joinMember] loginMember={}", loginMember);
 
-        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
-        session.setAttribute(SessionConst.LOGIN_CHECK, SessionConst.LOGIN_VALID);
+        controllerUtil.setLoginMember(request, loginMember);
         log.info("[login] login!");
         log.info("[login] redirectURL={}", redirectURL);
 

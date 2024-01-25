@@ -7,11 +7,10 @@ import eternal.baseball.dto.team.CreateTeamDTO;
 import eternal.baseball.dto.team.TeamDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
 import eternal.baseball.dto.teamMember.TeamMemberFormDTO;
-import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
+import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
-import eternal.baseball.global.constant.SessionConst;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -21,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j
@@ -32,6 +30,7 @@ public class TeamController {
 
     private final TeamService teamService;
     private final TeamMemberService teamMemberService;
+    private final ControllerUtil controllerUtil;
 
     /**
      * 팀 목록 페이지
@@ -65,7 +64,7 @@ public class TeamController {
             return "team/createTeamForm";
         }
 
-        MemberDTO loginMember = getLoginMember(request);
+        MemberDTO loginMember = controllerUtil.getLoginMember(request);
         log.info("[createTeam] loginMember={}", loginMember);
         log.info("[createTeam] createTeamDTO={}", createTeamDTO);
 
@@ -73,16 +72,7 @@ public class TeamController {
         ResponseDataDTO<TeamDTO> response = teamService.createTeam(createTeamDTO, loginMember);
 
         if (response.isError()) {
-            for (BindingErrorDTO bindingError : response.getBindingErrors()) {
-                if (bindingError.getErrorField().isEmpty()) {
-                    bindingResult.reject(bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                } else {
-                    bindingResult.rejectValue(bindingError.getErrorField(),
-                            bindingError.getErrorCode(),
-                            bindingError.getErrorMessage());
-                }
-            }
+            controllerUtil.convertBindingError(bindingResult, response.getBindingErrors());
             log.info("[createTeam] bindingResult={}", bindingResult);
             return "team/createTeamForm";
         }
@@ -114,7 +104,7 @@ public class TeamController {
         TeamDTO team = teamService.findTeam(teamCode);
 
         List<TeamMemberDTO> teamMembers = teamMemberService.findTeamMembers2(teamCode);
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         log.info("[team] loginMember={}", loginMemberDTO);
 
         TeamMemberDTO loginTeamMember = teamMemberService.findTeamMember2(loginMemberDTO.getMemberId(), teamCode);
@@ -129,11 +119,6 @@ public class TeamController {
         model.addAttribute("teamMembers", teamMembers);
 
         return "team/team";
-    }
-
-    private static MemberDTO getLoginMember(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
     @ModelAttribute("positions")

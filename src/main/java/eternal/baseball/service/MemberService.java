@@ -3,6 +3,7 @@ package eternal.baseball.service;
 import eternal.baseball.domain.Member;
 import eternal.baseball.dto.member.*;
 import eternal.baseball.dto.util.BindingErrorDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class MemberService {
     /**
      * 회원 가입
      */
-    public ResponseMemberDTO signUp(SignUpMemberDTO signUpMember) {
+    public ResponseDataDTO<MemberDTO> signUp(SignUpMemberDTO signUpMember) {
 
         List<BindingErrorDTO> bindingErrors = new ArrayList<>();
         // 로그인 Id 중복 검증
@@ -59,7 +60,7 @@ public class MemberService {
         }
 
         if (!bindingErrors.isEmpty()) {
-            return ResponseMemberDTO.builder()
+            return ResponseDataDTO.<MemberDTO>builder()
                     .error(true)
                     .bindingErrors(bindingErrors)
                     .build();
@@ -67,9 +68,9 @@ public class MemberService {
 
         Member member = memberRepository.save(signUpMember.toEntity());
 
-        return ResponseMemberDTO.builder()
+        return ResponseDataDTO.<MemberDTO>builder()
                 .error(false)
-                .member(MemberDTO.builder()
+                .data(MemberDTO.builder()
                         .memberId(member.getMemberId())
                         .loginId(member.getLoginId())
                         .name(member.getName())
@@ -81,7 +82,7 @@ public class MemberService {
     /**
      * 멤버 정보 수정
      */
-    public ResponseMemberDTO editMember(MemberDTO sessionMember, EditMemberDTO editMember) {
+    public ResponseDataDTO<MemberDTO> editMember(MemberDTO sessionMember, EditMemberDTO editMember) {
 
         String memberPassword = memberRepository.findByMemberId(sessionMember.getMemberId())
                 .getPassword();
@@ -119,7 +120,7 @@ public class MemberService {
         }
 
         if (!bindingErrors.isEmpty()) {
-            return ResponseMemberDTO.builder()
+            return ResponseDataDTO.<MemberDTO>builder()
                     .error(true)
                     .bindingErrors(bindingErrors)
                     .build();
@@ -127,9 +128,9 @@ public class MemberService {
 
         Member member = memberRepository.edit(sessionMember.getMemberId(), editMember.toEntity());
 
-        return ResponseMemberDTO.builder()
+        return ResponseDataDTO.<MemberDTO>builder()
                 .error(false)
-                .member(MemberDTO.builder()
+                .data(MemberDTO.builder()
                         .memberId(member.getMemberId())
                         .loginId(member.getLoginId())
                         .name(member.getName())

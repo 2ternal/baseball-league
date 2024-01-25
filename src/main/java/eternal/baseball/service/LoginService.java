@@ -2,8 +2,9 @@ package eternal.baseball.service;
 
 import eternal.baseball.domain.Member;
 import eternal.baseball.dto.login.LoginDTO.*;
-import eternal.baseball.dto.member.ResponseMemberDTO;
+import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
+import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class LoginService {
     /**
      * 로그인
      */
-    public ResponseMemberDTO login(LoginRequestDTO loginRequest) {
+    public ResponseDataDTO<MemberDTO> login(LoginRequestDTO loginRequest) {
         List<BindingErrorDTO> bindingErrors = new ArrayList<>();
         Member findMemberDTO = memberRepository.findByLoginId(loginRequest.getLoginId())
                 .filter(m -> m.getPassword().equals(loginRequest.getPassword()))
@@ -36,7 +37,7 @@ public class LoginService {
         }
 
         if (!bindingErrors.isEmpty()) {
-            return ResponseMemberDTO.builder()
+            return ResponseDataDTO.<MemberDTO>builder()
                     .error(true)
                     .bindingErrors(bindingErrors)
                     .build();
@@ -49,9 +50,9 @@ public class LoginService {
                 .birthday(findMemberDTO.getBirthday())
                 .build();
 
-        return ResponseMemberDTO.builder()
+        return ResponseDataDTO.<MemberDTO>builder()
                 .error(false)
-                .member(memberDTO)
+                .data(memberDTO)
                 .build();
     }
 }

@@ -27,7 +27,6 @@ public class TeamMemberService {
     public final TeamMemberRepository teamMemberRepository;
     public final TeamRepository teamRepository;
     public final MemberRepository memberRepository;
-    public final TeamService teamService;
 
     /**
      * 새 팀원 추가

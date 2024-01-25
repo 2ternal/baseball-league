@@ -1,6 +1,5 @@
 package eternal.baseball.controller;
 
-import eternal.baseball.domain.Member;
 import eternal.baseball.domain.custom.Player;
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
@@ -9,6 +8,7 @@ import eternal.baseball.domain.TeamMember;
 import eternal.baseball.dto.lineup.LineupDTO;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.player.PlayerDTO;
+import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.repository.TeamMemberRepository;
 import eternal.baseball.repository.TeamRepository;
 import eternal.baseball.service.LineupService;
@@ -43,6 +43,7 @@ public class LineupController {
     private final TeamService teamService;
     private final TeamMemberService teamMemberService;
     private final LineupService lineupService;
+    private final ControllerUtil controllerUtil;
 
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
@@ -92,7 +93,7 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
@@ -353,7 +354,7 @@ public class LineupController {
             return "lineup/writeLineupForm";
         }
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         log.info("[writeLineup] lineupForm={}", lineupForm);
 
         Lineup lineup = new Lineup();
@@ -405,7 +406,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
 
         if (loginTeamMember.getMemberShip().getGrade() > 3) {
@@ -472,7 +473,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -518,7 +519,7 @@ public class LineupController {
             return "lineup/editLineupForm";
         }
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
 
         Lineup lineup = new Lineup();
 
@@ -550,7 +551,7 @@ public class LineupController {
                                HttpServletRequest request,
                                Model model) {
 
-        MemberDTO loginMemberDTO = getLoginMember(request);
+        MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         TeamMember loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
         Lineup lineup = lineupService.findLineup(lineupId);
 
@@ -582,11 +583,6 @@ public class LineupController {
         lineupNumber.add("nine");
         lineupNumber.add("bench");
         return lineupNumber;
-    }
-
-    private static MemberDTO getLoginMember(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
     }
 
     public ArrayList<Player> getStarting(LineupFormDTO lineupFormDTO) {
