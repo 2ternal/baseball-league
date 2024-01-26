@@ -103,11 +103,11 @@ public class TeamController {
 
         TeamDTO team = teamService.findTeam(teamCode);
 
-        List<TeamMemberDTO> teamMembers = teamMemberService.findTeamMembers2(teamCode);
+        List<TeamMemberDTO> teamMembers = teamMemberService.findTeamMembers(teamCode);
         MemberDTO loginMemberDTO = controllerUtil.getLoginMember(request);
         log.info("[team] loginMember={}", loginMemberDTO);
 
-        TeamMemberDTO loginTeamMember = teamMemberService.findTeamMember2(loginMemberDTO.getMemberId(), teamCode);
+        TeamMemberDTO loginTeamMember = teamMemberService.findTeamMember(loginMemberDTO.getMemberId(), teamCode);
         log.info("[team] loginTeamMember={}", loginTeamMember);
 
         if (loginTeamMember != null && loginTeamMember.getMemberShip().getGrade() < TeamMemberShip.COACH.getGrade()) {

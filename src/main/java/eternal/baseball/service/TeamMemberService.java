@@ -83,55 +83,39 @@ public class TeamMemberService {
     /**
      * 멤버 ID와 팀 ID로 teamMember 찾기
      */
-    public TeamMember findTeamMember(Long teamMemberId) {
-        return teamMemberRepository.findByTeamMemberId(teamMemberId);
-    }
-
-    public TeamMember findTeamMember(Long memberId, Long teamId) {
-        return teamMemberRepository.findByMemberIdTeamId(memberId, teamId);
-    }
-
-    public TeamMember findTeamMember(Long memberId, String teamCode) {
-        return teamMemberRepository.findByMemberIdTeamCode(memberId, teamCode);
-    }
-
-    public TeamMemberDTO findTeamMember2(Long teamMemberId) {
+    public TeamMemberDTO findTeamMember(Long teamMemberId) {
         return TeamMemberDTO.from(teamMemberRepository.findByTeamMemberId(teamMemberId));
     }
 
-    public TeamMemberDTO findTeamMember2(Long memberId, String teamCode) {
+    public TeamMemberDTO findTeamMember(Long memberId, String teamCode) {
         return TeamMemberDTO.from(teamMemberRepository.findByMemberIdTeamCode(memberId, teamCode));
     }
 
     /**
      * 멤버 ID로 다수의 teamMember 찾기
      */
-    public List<TeamMember> findByMemberId(Long memberId) {
-        return teamMemberRepository.findByMemberId(memberId);
+    public List<TeamMemberDTO> findByMemberId(Long memberId) {
+        return teamMemberRepository.findByMemberId(memberId).stream()
+                .map(TeamMemberDTO::from)
+                .collect(Collectors.toList());
     }
 
     /**
      * 멤버 이름으로 다수의 teamMember 찾기
      */
-    public List<TeamMember> findByMemberName(String memberName) {
-        return teamMemberRepository.findByMemberName(memberName);
+    public List<TeamMemberDTO> findByMemberName(String memberName) {
+        return teamMemberRepository.findByMemberName(memberName).stream()
+                .map(TeamMemberDTO::from)
+                .collect(Collectors.toList());
     }
 
     /**
      * 팀 Id로 다수의 teamMember 찾기
      */
-    public ArrayList<TeamMember> findTeamMembers(Long teamId) {
-        return teamMemberRepository.findByTeamId(teamId);
-    }
-
-    public ArrayList<TeamMember> findTeamMembers(String teamCode) {
-        return teamMemberRepository.findByTeamCode(teamCode);
-    }
-
-    public List<TeamMemberDTO> findTeamMembers2(String teamCode) {
+    public ArrayList<TeamMemberDTO> findTeamMembers(String teamCode) {
         return teamMemberRepository.findByTeamCode(teamCode).stream()
                 .map(TeamMemberDTO::from)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

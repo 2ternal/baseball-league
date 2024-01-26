@@ -1,9 +1,7 @@
 package eternal.baseball.controller;
 
-
 import eternal.baseball.domain.custom.Position;
 import eternal.baseball.domain.custom.TeamMemberShip;
-import eternal.baseball.domain.TeamMember;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.team.TeamDTO;
 import eternal.baseball.dto.teamMember.TeamMemberDTO;
@@ -12,7 +10,7 @@ import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.TeamMemberService;
 import eternal.baseball.service.TeamService;
-import eternal.baseball.global.extension.AlertMessage;
+import eternal.baseball.global.extension.AlertMessageBox;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -41,7 +39,7 @@ public class TeamMemberController {
     @GetMapping("{teamMemberId}")
     public String teamMember(@PathVariable Long teamMemberId, Model model) {
 
-        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember(teamMemberId);
         model.addAttribute("teamMember", teamMember);
 
         return "teamMember/teamMember";
@@ -61,7 +59,7 @@ public class TeamMemberController {
         if (joinCheck) {
             log.info("[joinTeamForm] 이미 팀에 가입된 선수");
             String redirectURI = "/team/" + teamCode;
-            AlertMessage message = new AlertMessage("이미 팀에 가입되어 있습니다", redirectURI);
+            AlertMessageBox message = new AlertMessageBox("이미 팀에 가입되어 있습니다", redirectURI);
             model.addAttribute("message", message);
             return "template/alert";
         }
@@ -116,10 +114,10 @@ public class TeamMemberController {
                                        Model model,
                                        HttpServletRequest request) {
 
-        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember(teamMemberId);
         MemberDTO loginMember = controllerUtil.getLoginMember(request);
         TeamMemberDTO loginTeamMember =
-                teamMemberService.findTeamMember2(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
+                teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
 
         log.info("[manageTeamMemberForm] teamMember != loginTeamMember ={}", teamMember != loginTeamMember);
 
@@ -132,7 +130,7 @@ public class TeamMemberController {
             teamMemberShips = getTeamMemberShips(loginTeamMemberGrade);
         } else {
             String redirectURI = "/team/" + teamMember.getTeam().getTeamCode();
-            AlertMessage message = new AlertMessage("수정하려는 대상의 권한이 더 높습니다", redirectURI);
+            AlertMessageBox message = new AlertMessageBox("수정하려는 대상의 권한이 더 높습니다", redirectURI);
             model.addAttribute("message", message);
             log.info("[manageTeamMemberForm] AlertMessage redirectURI={}", redirectURI);
             return "template/alert";
@@ -158,10 +156,10 @@ public class TeamMemberController {
                                    HttpServletRequest request,
                                    Model model) {
 
-        TeamMemberDTO teamMember = teamMemberService.findTeamMember2(teamMemberId);
+        TeamMemberDTO teamMember = teamMemberService.findTeamMember(teamMemberId);
         MemberDTO loginMember = controllerUtil.getLoginMember(request);
 
-        TeamMember loginTeamMember =
+        TeamMemberDTO loginTeamMember =
                 teamMemberService.findTeamMember(loginMember.getMemberId(), teamMember.getTeam().getTeamCode());
 
         if (bindingResult.hasErrors()) {
@@ -179,7 +177,7 @@ public class TeamMemberController {
         //수정하려는 등급이 감독 이상일 때
         //기존 감독이나 오너의 등급을 선수로 내린다
         if (teamMember.getMemberShip() != editTeamMemberShip && editTeamMemberShip.getGrade() <= TeamMemberShip.MANAGER.getGrade()) {
-            TeamMemberDTO highTeamMember = teamMemberService.findTeamMembers2(teamMember.getTeam().getTeamCode()).stream()
+            TeamMemberDTO highTeamMember = teamMemberService.findTeamMembers(teamMember.getTeam().getTeamCode()).stream()
                     .filter(tm -> tm.getMemberShip().equals(editTeamMemberShip))
                     .findFirst()
                     .orElse(null);

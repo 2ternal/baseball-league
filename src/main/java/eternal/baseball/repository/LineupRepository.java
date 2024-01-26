@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class LineupRepository {
 
     private static final Map<Long, Lineup> lineupStore = new HashMap<>();
-    private static Long sequence = 0L;
+    private static Long sequence = 1000L;
 
     /**
      * 새 라인업 추가

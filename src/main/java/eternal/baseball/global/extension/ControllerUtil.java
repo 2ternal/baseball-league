@@ -1,5 +1,6 @@
 package eternal.baseball.global.extension;
 
+import eternal.baseball.dto.lineup.LineupFormDTO;
 import eternal.baseball.dto.member.MemberDTO;
 import eternal.baseball.dto.util.BindingErrorDTO;
 import eternal.baseball.global.constant.SessionConst;
@@ -31,6 +32,14 @@ public class ControllerUtil {
         log.info("[joinTeam] bindingResult={}", bindingResult);
     }
 
+    public AlertMessageBox makeAlertMessage(HttpServletRequest request, String alertMessage) {
+        String redirectURI = request.getHeader(SessionConst.PREVIOUS_URI);
+        return AlertMessageBox.builder()
+                .redirectURI(redirectURI)
+                .message(alertMessage)
+                .build();
+    }
+
     public void setLoginMember(HttpServletRequest request, MemberDTO loginMember) {
         HttpSession session = request.getSession();
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
@@ -38,7 +47,15 @@ public class ControllerUtil {
     }
 
     public MemberDTO getLoginMember(HttpServletRequest request) {
+        return (MemberDTO) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER);
+    }
+
+    public void setLineup(HttpServletRequest request, LineupFormDTO lineup) {
         HttpSession session = request.getSession();
-        return (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        session.setAttribute(SessionConst.LINEUP_CARD, lineup);
+    }
+
+    public LineupFormDTO getLineupForm(HttpServletRequest request) {
+        return (LineupFormDTO) request.getSession().getAttribute(SessionConst.LINEUP_CARD);
     }
 }

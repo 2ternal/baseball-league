@@ -35,6 +35,7 @@ public class TeamMemberFormDTO {
     public static TeamMemberFormDTO from(TeamMemberDTO teamMemberDTO) {
         return TeamMemberFormDTO.builder()
                 .teamName(teamMemberDTO.getTeam().getTeamName())
+                .teamCode(teamMemberDTO.getTeam().getTeamCode())
                 .memberName(teamMemberDTO.getMember().getName())
                 .mainPosition(teamMemberDTO.getMainPosition().getDescription())
                 .backNumber(teamMemberDTO.getBackNumber())

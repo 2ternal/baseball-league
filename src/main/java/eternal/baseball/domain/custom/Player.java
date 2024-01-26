@@ -1,27 +1,21 @@
 package eternal.baseball.domain.custom;
 
 import eternal.baseball.domain.TeamMember;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@ToString
+@NoArgsConstructor
 public class Player {
 
     private TeamMember teamMember;
     private Position position;
     private Integer orderNum;
 
-    public Player() {
-    }
-
-    public Player(TeamMember teamMember) {
-        this.teamMember = teamMember;
-        this.position = Position.NONE;
-        this.orderNum = 0;
-    }
-
-    public Player(TeamMember teamMember, Position position, Integer battingOrder) {
+    @Builder
+    public Player(TeamMember teamMember, Position position, Integer orderNum) {
         this.teamMember = teamMember;
         this.position = position;
-        this.orderNum = battingOrder;
+        this.orderNum = orderNum;
     }
 }

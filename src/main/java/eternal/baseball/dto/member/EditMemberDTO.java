@@ -11,7 +11,10 @@ import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class EditMemberDTO {
 
     private Long memberId;
@@ -32,16 +35,15 @@ public class EditMemberDTO {
     @NotNull
     private Integer day;
 
-    public EditMemberDTO() {
-    }
-
-    public EditMemberDTO(eternal.baseball.dto.member.MemberDTO memberDTO) {
-        this.memberId = memberDTO.getMemberId();
-        this.name = memberDTO.getName();
-        this.loginId = memberDTO.getLoginId();
-        this.year = memberDTO.getBirthday().getYear();
-        this.month = memberDTO.getBirthday().getMonth();
-        this.day = memberDTO.getBirthday().getDay();
+    public static EditMemberDTO fromDTO(MemberDTO memberDTO) {
+        return EditMemberDTO.builder()
+                .memberId(memberDTO.getMemberId())
+                .name(memberDTO.getName())
+                .loginId(memberDTO.getLoginId())
+                .year(memberDTO.getBirthday().getYear())
+                .month(memberDTO.getBirthday().getMonth())
+                .day(memberDTO.getBirthday().getDay())
+                .build();
     }
 
     public Member toEntity() {

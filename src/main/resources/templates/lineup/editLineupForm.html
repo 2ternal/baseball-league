@@ -72,7 +72,7 @@
                 <tbody>
                 <tr th:each="starting, startingStat : ${lineupForm.startingPlayers}">
                     <td th:text="${starting.orderNum}"></td>
-                    <td><input type="text" th:value="${starting.name}" readonly>
+                    <td><input type="text" th:value="${starting.teamMember.member.name}" readonly>
                     </td>
                     <td><input type="text" th:value="${starting.position}" readonly>
                     </td>
@@ -85,7 +85,7 @@
                 <tbody>
                 <tr th:each="bench : ${lineupForm.benchPlayers}">
                     <td th:text="--"></td>
-                    <td><input type="text" th:value="${bench.name}" readonly>
+                    <td><input type="text" th:value="${bench.teamMember.member.name}" readonly>
                     </td>
                     <td><input type="text" th:value="${bench.position}" readonly>
                     </td>

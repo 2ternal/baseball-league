@@ -1,14 +1,20 @@
 package eternal.baseball.dto.lineup;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@Builder
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class LineupChangeCard {
 
+    private String teamCode;
     @NotEmpty
     private String lineupName;
     private boolean one;
@@ -21,9 +27,6 @@ public class LineupChangeCard {
     private boolean eight;
     private boolean nine;
     private Integer bench;
-
-    public LineupChangeCard() {
-    }
 
     public List<Boolean> isTrueList() {
         ArrayList<Boolean> booleans = new ArrayList<>();

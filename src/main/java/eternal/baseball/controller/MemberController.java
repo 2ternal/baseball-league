@@ -1,10 +1,10 @@
 package eternal.baseball.controller;
 
 import eternal.baseball.dto.member.*;
+import eternal.baseball.dto.teamMember.TeamMemberDTO;
 import eternal.baseball.dto.util.ResponseDataDTO;
 import eternal.baseball.global.extension.ControllerUtil;
 import eternal.baseball.service.MemberService;
-import eternal.baseball.domain.TeamMember;
 import eternal.baseball.service.TeamMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +82,7 @@ public class MemberController {
     public String member(@PathVariable Long memberId, Model model) {
 
         MemberDTO member = memberService.findMember(memberId);
-        List<TeamMember> teamMemberList = teamMemberService.findByMemberId(member.getMemberId());
+        List<TeamMemberDTO> teamMemberList = teamMemberService.findByMemberId(member.getMemberId());
 
         model.addAttribute("member", member);
         model.addAttribute("teamMemberList", teamMemberList);
@@ -97,7 +97,7 @@ public class MemberController {
     public String myPageForm(Model model, HttpServletRequest request) {
 
         MemberDTO loginMember = controllerUtil.getLoginMember(request);
-        List<TeamMember> teamMemberList = teamMemberService.findByMemberId(loginMember.getMemberId());
+        List<TeamMemberDTO> teamMemberList = teamMemberService.findByMemberId(loginMember.getMemberId());
 
         model.addAttribute("loginMember", loginMember);
         model.addAttribute("teamMemberList", teamMemberList);
@@ -115,7 +115,7 @@ public class MemberController {
 
         if (editMember.getName() == null) {
             MemberDTO member = controllerUtil.getLoginMember(request);
-            editMember = new EditMemberDTO(member);
+            editMember = EditMemberDTO.fromDTO(member);
             model.addAttribute("editMember", editMember);
             log.info("[editMemberForm] editMember={}", editMember);
         }
