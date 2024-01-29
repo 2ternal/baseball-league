@@ -1,12 +1,9 @@
 package eternal.baseball.domain;
 
-import eternal.baseball.dto.team.CreateTeamDTO;
 import lombok.*;
 
 @Getter
-@Setter
-@Builder
-@AllArgsConstructor
+@ToString
 @NoArgsConstructor
 public class Team {
 
@@ -15,14 +12,19 @@ public class Team {
     private String teamCode;
     private Member owner;
 
-    public Team(String teamName, String teamCode, Member member) {
-        this.teamName = teamName;
-        this.teamCode = teamCode;
-        this.owner = member;
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 
-    public void createTeamFormToTeam(CreateTeamDTO createTeamDTO) {
-        this.teamName = createTeamDTO.getTeamName();
-        this.teamCode = createTeamDTO.getTeamCode();
+    public void setOwner(Member owner) {
+        this.owner = owner;
+    }
+
+    @Builder
+    public Team(Long teamId, String teamName, String teamCode, Member owner) {
+        this.teamId = teamId;
+        this.teamName = teamName;
+        this.teamCode = teamCode;
+        this.owner = owner;
     }
 }

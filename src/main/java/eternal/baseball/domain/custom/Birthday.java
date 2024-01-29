@@ -1,8 +1,9 @@
 package eternal.baseball.domain.custom;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@NoArgsConstructor
 public class Birthday {
 
     private Integer year;
@@ -14,9 +15,7 @@ public class Birthday {
         return year + "년 " + month + "월 " + day + "일";
     }
 
-    public Birthday() {
-    }
-
+    @Builder
     public Birthday(Integer year, Integer month, Integer day) {
         this.year = year;
         this.month = month;

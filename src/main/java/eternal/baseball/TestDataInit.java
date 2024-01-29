@@ -27,39 +27,72 @@ public class TestDataInit {
     @PostConstruct
     public void init() {
 
-        Member owner1 = new Member();
-        owner1.setLoginId("1234");
-        owner1.setPassword("1234");
-        owner1.setName("오너1");
-        owner1.setBirthday(new Birthday(1999, 11, 5));
+        Member owner1 = Member.builder()
+                .loginId("1234")
+                .password("1234")
+                .name("오너1")
+                .birthday(new Birthday(1999, 11, 5))
+                .build();
 
-        Member owner2 = new Member();
-        owner2.setLoginId("123");
-        owner2.setPassword("123");
-        owner2.setName("오너2");
-        owner2.setBirthday(new Birthday(1998, 5, 15));
+        Member owner2 = Member.builder()
+                .loginId("123")
+                .password("123")
+                .name("오너2")
+                .birthday(new Birthday(1998, 5, 15))
+                .build();
 
-        Member owner3 = new Member();
-        owner3.setLoginId("12345");
-        owner3.setPassword("12345");
-        owner3.setName("오너3");
-        owner3.setBirthday(new Birthday(1997, 5, 25));
+        Member owner3 = Member.builder()
+                .loginId("12345")
+                .password("12345")
+                .name("오너3")
+                .birthday(new Birthday(1997, 5, 25))
+                .build();
 
         memberRepository.save(owner1);
         memberRepository.save(owner2);
         memberRepository.save(owner3);
 
-        Team team1 = new Team("테스트 1팀", "AAA", owner1);
-        Team team2 = new Team("테스트 2팀", "BBB", owner2);
-        Team team3 = new Team("테스트 3팀", "CCC", owner3);
+        Team team1 = Team.builder()
+                .teamName("테스트 1팀")
+                .teamCode("AAA")
+                .owner(owner1)
+                .build();
+        Team team2 = Team.builder()
+                .teamName("테스트 2팀")
+                .teamCode("BBB")
+                .owner(owner2)
+                .build();
+        Team team3 = Team.builder()
+                .teamName("테스트 3팀")
+                .teamCode("CCC")
+                .owner(owner3)
+                .build();
 
         teamRepository.save(team1);
         teamRepository.save(team2);
         teamRepository.save(team3);
 
-        TeamMember teamMemberOwner1 = new TeamMember(owner1, team1, TeamMemberShip.OWNER, Position.NONE, 10L);
-        TeamMember teamMemberOwner2 = new TeamMember(owner2, team2, TeamMemberShip.OWNER, Position.NONE, 21L);
-        TeamMember teamMemberOwner3 = new TeamMember(owner3, team3, TeamMemberShip.OWNER, Position.NONE, 99L);
+        TeamMember teamMemberOwner1 = TeamMember.builder()
+                .member(owner1)
+                .team(team1)
+                .memberShip(TeamMemberShip.OWNER)
+                .mainPosition(Position.NONE)
+                .backNumber(10L)
+                .build();
+        TeamMember teamMemberOwner2 = TeamMember.builder()
+                .member(owner2)
+                .team(team2)
+                .memberShip(TeamMemberShip.OWNER)
+                .mainPosition(Position.NONE)
+                .backNumber(21L)
+                .build();
+        TeamMember teamMemberOwner3 = TeamMember.builder()
+                .member(owner3)
+                .team(team3)
+                .memberShip(TeamMemberShip.OWNER)
+                .mainPosition(Position.NONE)
+                .backNumber(99L)
+                .build();
 
         teamMemberRepository.save(teamMemberOwner1);
         teamMemberRepository.save(teamMemberOwner2);
@@ -71,15 +104,21 @@ public class TestDataInit {
             String memberName = "멤버" + i;
             Birthday birthday = new Birthday(2000 + i, 11, i);
 
-            Member member = new Member();
-            member.setLoginId(memberLoginId);
-            member.setPassword(memberPassword);
-            member.setName(memberName);
-            member.setBirthday(birthday);
+            Member member1 = Member.builder()
+                    .loginId(memberLoginId)
+                    .password(memberPassword)
+                    .name(memberName)
+                    .birthday(birthday)
+                    .build();
+            memberRepository.save(member1);
 
-            memberRepository.save(member);
-
-            TeamMember teamMember1 = new TeamMember(member, team1, TeamMemberShip.PLAYER, Position.NONE, (long) i);
+            TeamMember teamMember1 = TeamMember.builder()
+                    .member(member1)
+                    .team(team1)
+                    .memberShip(TeamMemberShip.PLAYER)
+                    .mainPosition(Position.NONE)
+                    .backNumber((long) i)
+                    .build();
             teamMemberRepository.save(teamMember1);
         }
 
@@ -89,15 +128,21 @@ public class TestDataInit {
             String memberName = "멤버" + i;
             Birthday birthday = new Birthday(2000 + i, 11, i);
 
-            Member member = new Member();
-            member.setLoginId(memberLoginId);
-            member.setPassword(memberPassword);
-            member.setName(memberName);
-            member.setBirthday(birthday);
+            Member member2 = Member.builder()
+                    .loginId(memberLoginId)
+                    .password(memberPassword)
+                    .name(memberName)
+                    .birthday(birthday)
+                    .build();
+            memberRepository.save(member2);
 
-            memberRepository.save(member);
-
-            TeamMember teamMember2 = new TeamMember(member, team2, TeamMemberShip.PLAYER, Position.NONE, (long) i);
+            TeamMember teamMember2 = TeamMember.builder()
+                    .member(member2)
+                    .team(team2)
+                    .memberShip(TeamMemberShip.PLAYER)
+                    .mainPosition(Position.NONE)
+                    .backNumber((long) i)
+                    .build();
             teamMemberRepository.save(teamMember2);
         }
 
@@ -107,15 +152,21 @@ public class TestDataInit {
             String memberName = "멤버" + i;
             Birthday birthday = new Birthday(2000 + i, 11, i);
 
-            Member memberDTO = new Member();
-            memberDTO.setLoginId(memberLoginId);
-            memberDTO.setPassword(memberPassword);
-            memberDTO.setName(memberName);
-            memberDTO.setBirthday(birthday);
+            Member member3 = Member.builder()
+                    .loginId(memberLoginId)
+                    .password(memberPassword)
+                    .name(memberName)
+                    .birthday(birthday)
+                    .build();
+            memberRepository.save(member3);
 
-            memberRepository.save(memberDTO);
-
-            TeamMember teamMember3 = new TeamMember(memberDTO, team3, TeamMemberShip.PLAYER, Position.NONE, (long) i);
+            TeamMember teamMember3 = TeamMember.builder()
+                    .member(member3)
+                    .team(team3)
+                    .memberShip(TeamMemberShip.PLAYER)
+                    .mainPosition(Position.NONE)
+                    .backNumber((long) i)
+                    .build();
             teamMemberRepository.save(teamMember3);
         }
     }
